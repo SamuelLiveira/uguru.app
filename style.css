@@ -1,0 +1,492 @@
+/* ==========================================
+   üGURU — ESTILO CÓSMICO FINAL
+========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    font-family: 'Inter', sans-serif;
+
+    background:
+        radial-gradient(circle at top,
+            #1f2b63 0%,
+            #0b1026 45%,
+            #050814 100%);
+
+    color: #f3e7c3;
+
+    overscroll-behavior: none;
+}
+
+/* ==========================================
+   BODY
+========================================== */
+
+body {
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    padding:
+        env(safe-area-inset-top)
+        18px
+        env(safe-area-inset-bottom);
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+/* ==========================================
+   FUNDO ESTRELADO
+========================================== */
+
+body::before {
+
+    content: '';
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image:
+        radial-gradient(
+            rgba(255,255,255,0.7) 1px,
+            transparent 1px
+        );
+
+    background-size: 3px 3px;
+
+    opacity: 0.08;
+
+    animation: starsMove 60s linear infinite;
+
+    pointer-events: none;
+}
+
+@keyframes starsMove {
+
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-200px);
+    }
+}
+
+/* ==========================================
+   LOGO
+========================================== */
+
+.logo {
+
+    margin-top: 10px;
+
+    font-size: 2rem;
+
+    font-family: 'Playfair Display', serif;
+
+    font-weight: 700;
+
+    color: #f3e7c3;
+
+    text-shadow:
+        0 0 10px rgba(212,175,55,0.45),
+        0 0 25px rgba(212,175,55,0.2);
+
+    z-index: 2;
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.container {
+
+    width: 100%;
+    max-width: 430px;
+
+    margin-top: 28px;
+
+    padding: 26px;
+
+    border-radius: 28px;
+
+    background:
+        rgba(17, 22, 45, 0.72);
+
+    backdrop-filter: blur(18px);
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 12px 40px rgba(0,0,0,0.45);
+
+    z-index: 2;
+}
+
+/* ==========================================
+   TEXTO
+========================================== */
+
+.subtitle {
+
+    text-align: center;
+
+    margin-bottom: 24px;
+
+    opacity: 0.85;
+
+    font-size: 1rem;
+}
+
+.glow-text {
+
+    text-align: center;
+
+    margin-bottom: 18px;
+
+    font-size: 1.6rem;
+
+    color: #f3e7c3;
+
+    text-shadow:
+        0 0 12px rgba(212,175,55,0.4);
+}
+
+/* ==========================================
+   INPUTS
+========================================== */
+
+.input-group {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+input {
+
+    width: 100%;
+
+    padding: 16px;
+
+    border-radius: 18px;
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    background:
+        rgba(255,255,255,0.05);
+
+    color: #f3e7c3;
+
+    outline: none;
+
+    font-size: 1rem;
+
+    transition: 0.25s;
+}
+
+input::placeholder {
+
+    color:
+        rgba(243,231,195,0.45);
+}
+
+input:focus {
+
+    border:
+        1px solid rgba(212,175,55,0.55);
+
+    box-shadow:
+        0 0 15px rgba(212,175,55,0.15);
+}
+
+/* ==========================================
+   BOTÃO PRINCIPAL
+========================================== */
+
+.btn-primary {
+
+    width: 100%;
+
+    margin-top: 24px;
+
+    padding: 16px;
+
+    border: none;
+    outline: none;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d4af37,
+            #f3e7c3
+        );
+
+    color: #1a1a1a;
+
+    font-weight: 700;
+
+    font-size: 1rem;
+
+    cursor: pointer;
+
+    transition: 0.25s;
+
+    box-shadow:
+        0 8px 24px rgba(212,175,55,0.35);
+}
+
+.btn-primary:active {
+
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   NUMEROLOGIA
+========================================== */
+
+.numerology-card {
+
+    margin-top: 20px;
+
+    padding: 22px;
+
+    border-radius: 22px;
+
+    background:
+        rgba(255,255,255,0.04);
+
+    border:
+        1px solid rgba(255,255,255,0.06);
+
+    text-align: center;
+}
+
+/* ==========================================
+   CHAT
+========================================== */
+
+#chat-container {
+
+    width: 100%;
+    max-width: 430px;
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding:
+        20px
+        12px
+        130px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+
+    scroll-behavior: smooth;
+
+    z-index: 2;
+}
+
+/* ==========================================
+   MENSAGENS
+========================================== */
+
+.message {
+
+    max-width: 85%;
+
+    padding: 16px 18px;
+
+    border-radius: 22px;
+
+    line-height: 1.6;
+
+    font-size: 0.97rem;
+
+    animation: fadeIn 0.25s ease;
+}
+
+.user-msg {
+
+    align-self: flex-end;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d4af37,
+            #f3e7c3
+        );
+
+    color: #1a1a1a;
+
+    border-bottom-right-radius: 8px;
+}
+
+.guru-msg {
+
+    align-self: flex-start;
+
+    background:
+        rgba(243,231,195,0.92);
+
+    color: #2b1d0e;
+
+    border-bottom-left-radius: 8px;
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,0.25);
+}
+
+/* ==========================================
+   INPUT BAR
+========================================== */
+
+.input-area {
+
+    position: fixed;
+
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+
+    padding:
+        12px
+        14px
+        calc(12px + env(safe-area-inset-bottom));
+
+    display: flex;
+
+    gap: 12px;
+
+    align-items: center;
+
+    background:
+        rgba(8,12,28,0.88);
+
+    backdrop-filter: blur(16px);
+
+    border-top:
+        1px solid rgba(255,255,255,0.08);
+
+    z-index: 999;
+}
+
+/* ==========================================
+   INPUT CHAT
+========================================== */
+
+#user-input {
+
+    flex: 1;
+
+    margin: 0;
+}
+
+/* ==========================================
+   BOTÃO ORÁCULO
+========================================== */
+
+#send-btn {
+
+    width: 60px;
+    height: 60px;
+
+    border: none;
+    outline: none;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #f7e7a8,
+            #d4af37
+        );
+
+    color: #1a1a1a;
+
+    font-size: 1.5rem;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    flex-shrink: 0;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.25s ease;
+
+    box-shadow:
+        0 0 20px rgba(212,175,55,0.35),
+        0 8px 20px rgba(0,0,0,0.35);
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+#send-btn:focus,
+#send-btn:active {
+
+    outline: none;
+
+    box-shadow:
+        0 0 22px rgba(212,175,55,0.45),
+        0 8px 20px rgba(0,0,0,0.35);
+
+    transform: scale(0.96);
+}
+
+/* ==========================================
+   ESCONDIDO
+========================================== */
+
+.hidden {
+
+    display: none !important;
+}
+
+/* ==========================================
+   ANIMAÇÕES
+========================================== */
+
+@keyframes fadeIn {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

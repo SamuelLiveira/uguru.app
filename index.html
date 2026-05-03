@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+        content="width=device-width,
+                 initial-scale=1.0,
+                 maximum-scale=1.0,
+                 user-scalable=no">
+
+    <title>üGURU — Oráculo Digital</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- LOGO -->
+    <div class="logo">
+        üGuru
+    </div>
+
+    <!-- ONBOARDING -->
+    <section id="onboarding" class="container">
+
+        <p class="subtitle">
+            Inicie sua jornada astral
+        </p>
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                id="userName"
+                placeholder="Seu nome">
+
+            <input
+                type="date"
+                id="birthDate">
+
+            <input
+                type="time"
+                id="birthTime">
+
+            <input
+                type="text"
+                id="birthLocation"
+                placeholder="Cidade de nascimento">
+
+        </div>
+
+        <button
+            onclick="saveAndProceed()"
+            class="btn-primary">
+
+            DESPERTAR 👁️
+
+        </button>
+
+    </section>
+
+    <!-- PREVIEW -->
+    <section
+        id="result-preview"
+        class="container hidden">
+
+        <h2
+            id="welcome-user"
+            class="glow-text">
+        </h2>
+
+        <div class="numerology-card">
+
+            <h3>
+                Sua Numerologia
+            </h3>
+
+            <p id="life-path-number">
+                Calculando seu caminho...
+            </p>
+
+        </div>
+
+        <button
+            onclick="goToChat()"
+            class="btn-primary">
+
+            CONSULTAR ORÁCULO 🔮
+
+        </button>
+
+    </section>
+
+    <!-- CHAT -->
+    <div
+        id="chat-container"
+        class="hidden">
+    </div>
+
+    <!-- INPUT -->
+    <div
+        class="input-area hidden"
+        id="input-bar">
+
+        <input
+            type="text"
+            id="user-input"
+            placeholder="Pergunte ao Oráculo...">
+
+        <button
+            id="send-btn"
+            onclick="sendMessage()">
+
+            ü
+
+        </button>
+
+    </div>
+
+    <!-- SCRIPT -->
+    <script src="script.js"></script>
+
+</body>
+</html>
