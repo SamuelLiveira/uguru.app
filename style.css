@@ -447,3 +447,76 @@ input::placeholder { color: rgba(255, 255, 255, 0.7) !important; }
         box-shadow: 0 0 15px rgba(141, 107, 255, 0.4), 0 0 30px rgba(141, 107, 255, 0.2);
     }
 }
+ign: center;
+}
+
+.sinastria-card input {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    margin-bottom: 10px !important;
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-sinastria-confirm {
+    background: linear-gradient(135deg, #d4af37, #aa8928);
+    color: #1a1a1a;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    width: 100%;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* BOTÃO COM AURA DE PLASMA */
+#send-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #8d6bff, #5f3dc4, #24124a);
+    color: #f8e7bc;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    cursor: pointer;
+    position: relative; /* Necessário para a aura */
+    z-index: 1;
+    
+    /* O Brilho de Fundo (Aura) */
+    box-shadow: 0 0 15px rgba(141, 107, 255, 0.4), 
+                0 0 30px rgba(141, 107, 255, 0.2);
+    animation: buttonGlowPulse 3s infinite ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* EFEITO DE CLIQUE — EXPLOSÃO DE LUZ */
+#send-btn:active {
+    transform: scale(0.92);
+    filter: brightness(1.3) saturate(1.2);
+    box-shadow: 0 0 40px rgba(141, 107, 255, 0.8), 
+                0 0 80px rgba(141, 107, 255, 0.4);
+    transition: all 0.1s;
+}
+
+/* ANIMAÇÃO DA PULSAÇÃO MÍSTICA */
+@keyframes buttonGlowPulse {
+    0% {
+        box-shadow: 0 0 15px rgba(141, 107, 255, 0.4), 0 0 30px rgba(141, 107, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(141, 107, 255, 0.7), 0 0 50px rgba(141, 107, 255, 0.3);
+        filter: brightness(1.1);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(141, 107, 255, 0.4), 0 0 30px rgba(141, 107, 255, 0.2);
+    }
+}
