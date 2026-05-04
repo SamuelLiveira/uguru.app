@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>üGuru👁️ — Oráculo Dândi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="logo">üGuru👁️</div>
+
+    <div id="onboarding" class="container" style="text-align: center;">
+        <p class="subtitle">Bem-vindo, üGuru o aguarda no salão</p>
+        <h2 class="glow-text">Credenciais de Batismo</h2>
+        
+        <div class="input-group">
+            <input type="text" id="fullName" placeholder="Nome Completo de Batismo">
+            <input type="date" id="birthDate">
+            <input type="time" id="birthTime">
+            
+            <input type="text" id="birthCity" placeholder="Cidade de Nascimento">
+            
+            <select id="birthState">
+                <option value="" disabled selected>Selecione seu Estado (UF)</option>
+                <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option>
+                <option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
+            </select>
+
+            <select id="birthCountry">
+                <option value="Brazil" selected>Brasil</option>
+                <option value="Portugal">Portugal</option>
+                <option value="Angola">Angola</option>
+                <option value="Other">Outro...</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="reviewData()">Verificar Dados</button>
+    </div>
+
+    <div id="confirmation-modal" class="container hidden">
+        <h2 class="glow-text">Verifique seu Portal</h2>
+        <div id="review-content" class="review-box"></div>
+        <p class="confirmation-text" style="text-align: center; margin-bottom: 20px;">As estrelas exigem verdade. Os dados estão corretos?</p>
+        <div class="button-row" style="display: flex; gap: 10px;">
+            <button class="btn-secondary" onclick="backToEdit()" style="flex: 1;">Alterar</button>
+            <button class="btn-primary" onclick="confirmAndProceed()" style="flex: 1;">Confirmar</button>
+        </div>
+    </div>
+
+    <div id="banquete-wrapper" class="hidden" style="width: 100%; max-width: 430px; display: flex; flex-direction: column; align-items: center; margin: 0 auto;">
+        <div id="banquete-cards" style="width: 100%;"></div>
+        <button class="btn-primary" style="margin-top: 30px;" onclick="entrarNoSalao()">Entrar no Salão</button>
+        
+        <p onclick="recomecarBatismo()" style="color: rgba(255,255,255,0.2); font-size: 11px; cursor: pointer; text-decoration: underline; margin-top: 25px; text-align: center; margin-bottom: 50px;">
+            Deseja realizar um novo batismo?
+        </p>
+    </div>
+
+    <div id="chat-container" class="hidden">
+        <div class="chat-header" style="width: 100%; display: flex; justify-content: flex-start; padding: 15px 0; position: sticky; top: 0; z-index: 10; background: transparent;">
+            <button onclick="voltarParaBanquete()" class="btn-back">Voltar ao Dossiê</button>
+        </div>
+        
+        <div id="chat-messages" style="padding: 10px 0 120px 0; display: flex; flex-direction: column; gap: 15px;"></div>
+    </div>
+
+    <div id="input-bar" class="input-area hidden">
+        <div class="input-glass-container">
+            <input type="text" id="user-input" placeholder="Sussurre para o Oráculo...">
+            <button id="send-btn" onclick="sendMessage()">ü</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
