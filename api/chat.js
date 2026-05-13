@@ -1,4 +1,7 @@
-// ==========================================\n// üGURU 6.0 — BACK-END ENGINE (VERCEL)\n// Rota: /api/chat\n// ==========================================\n
+// ==========================================
+// üGURU 6.0 — BACK-END ENGINE (VERCEL)
+// Rota: /api/chat
+// ==========================================
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -6,7 +9,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { message, userData, history } = req.body;
+        const { message, userData, history, messageCount, tier } = req.body;
 
         // 1. MONTAGEM DO DNA DO USUÁRIO
         const dnaUsuario = `
@@ -20,7 +23,6 @@ export default async function handler(req, res) {
         `;
 
         // 2. INJEÇÃO DO SYSTEM PROMPT
-        // Cole aqui todo o texto do seu prompt (Os 7 blocos romanos)
         const systemPromptMaster = `
 [I. 🧬 O ÂNCORA: DNA DO USUÁRIO]
 
@@ -219,7 +221,7 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
             { role: "user", content: message }
         ];
 
-        // 4. CHAMADA À API DA GROQ (Conforme seu motor de cards)
+        // 4. CHAMADA À API DA GROQ
         const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { 
@@ -240,7 +242,14 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
         const respostaGuru = groqData.choices[0].message.content;
 
         // 5. RETORNO PARA O FRONT-END
-        return res.status(200).json({ reply: respostaGuru });
+        // Confirma a contagem do servidor para sincronizar a barra de progresso
+        const novaContagem = (parseInt(messageCount) || 0) + 1;
+
+        return res.status(200).json({ 
+            reply: respostaGuru,
+            serverMessageCount: novaContagem,
+            nextToken: null
+        });
 
     } catch (error) {
         console.error("Erro no Oráculo:", error);
