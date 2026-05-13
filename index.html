@@ -4,82 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>üGuru👁️ — Oráculo Dândi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <div id="sync-bar-container" class="hidden">
+        <div id="sync-bar-fill"></div>
+    </div>
+
+    <div id="dossie-eye" class="runa-oculta hidden" onclick="toggleDossie()">
+        <span>👁️</span>
+    </div>
+
     <div class="logo">üGuru👁️</div>
 
-    <div id="onboarding" class="container" style="text-align: center;">
-        <p class="subtitle">Bem-vindo, üGuru o aguarda no salão</p>
-        <h2 class="glow-text">Credenciais de Batismo</h2>
+    <div id="onboarding" class="container hidden">
+        <p class="subtitle">O Salão o aguarda</p>
+        <h2 class="glow-text">Batismo de Alma</h2>
         
         <div class="input-group">
-            <input type="text" id="fullName" placeholder="Nome Completo de Batismo">
+            <input type="text" id="userName" placeholder="Nome Completo">
             <input type="date" id="birthDate">
             <input type="time" id="birthTime">
-            
             <input type="text" id="birthCity" placeholder="Cidade de Nascimento">
-            
             <select id="birthState">
-                <option value="" disabled selected>Selecione seu Estado (UF)</option>
-                <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option>
-                <option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option>
-                <option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option>
-                <option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option>
-                <option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option>
-                <option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option>
-                <option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option>
-                <option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option>
-                <option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
-            </select>
+                <option value="" disabled selected>Estado (UF)</option>
+                <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+</select>
+    </div> <p style="font-size: 10px; color: #f6edd6; opacity: 0.5; margin-top: 15px; margin-bottom: 5px; text-align: center; font-family: 'Inter', sans-serif;">
+        Ao iniciar sua audiência, você consagra seu aceite ao nosso 
+        <a href="#" onclick="abrirModalTermos()" style="color: #e6c068; text-decoration: underline;">Contrato de Iniciação</a>.
+    </p>
 
-            <select id="birthCountry">
-                <option value="Brazil" selected>Brasil</option>
-                <option value="Portugal">Portugal</option>
-                <option value="Angola">Angola</option>
-                <option value="Other">Outro...</option>
-            </select>
-        </div>
+    <button class="btn-primary" onclick="reviewData()">Iniciar Batismo</button>
 
-        <button class="btn-primary" onclick="reviewData()">Verificar Dados</button>
-    </div>
+</div>
+
 
     <div id="confirmation-modal" class="container hidden">
-        <h2 class="glow-text">Verifique seu Portal</h2>
+        <h2 class="glow-text">Confirme seu Portal</h2>
         <div id="review-content" class="review-box"></div>
-        <p class="confirmation-text" style="text-align: center; margin-bottom: 20px;">As estrelas exigem verdade. Os dados estão corretos?</p>
-        <div class="button-row" style="display: flex; gap: 10px;">
-            <button class="btn-secondary" onclick="backToEdit()" style="flex: 1;">Alterar</button>
-            <button class="btn-primary" onclick="confirmAndProceed()" style="flex: 1;">Confirmar</button>
+        <div class="button-row">
+            <button class="btn-secondary" onclick="backToEdit()">Alterar</button>
+            <button class="btn-primary" onclick="confirmAndProceed()">Confirmar</button>
         </div>
     </div>
 
-    <div id="banquete-wrapper" class="hidden" style="width: 100%; max-width: 430px; display: flex; flex-direction: column; align-items: center; margin: 0 auto;">
-        <div id="banquete-cards" style="width: 100%;"></div>
-        <button class="btn-primary" style="margin-top: 30px;" onclick="entrarNoSalao()">Entrar no Salão</button>
-        
-        <p onclick="recomecarBatismo()" style="color: rgba(255,255,255,0.2); font-size: 11px; cursor: pointer; text-decoration: underline; margin-top: 25px; text-align: center; margin-bottom: 50px;">
-            Deseja realizar um novo batismo?
-        </p>
+    <div id="banquete-wrapper" class="hidden">
+        <div id="cards-container">
+            </div>
+        <button class="btn-primary" onclick="irParaChat()">Entrar no Salão</button>
+        <p onclick="recomecarBatismo()" class="reset-link">Novo Batismo?</p>
     </div>
 
     <div id="chat-container" class="hidden">
-        <div class="chat-header" style="width: 100%; display: flex; justify-content: flex-start; padding: 15px 0; position: sticky; top: 0; z-index: 10; background: transparent;">
-            <button onclick="voltarParaBanquete()" class="btn-back">Voltar ao Dossiê</button>
+        <div id="chat-messages">
+            <div id="oracle-loading" class="hidden">
+                <p class="loading-text">O Oráculo está decifrando as estrelas...</p>
+            </div>
         </div>
-        
-        <div id="chat-messages" style="padding: 10px 0 120px 0; display: flex; flex-direction: column; gap: 15px;"></div>
     </div>
 
     <div id="input-bar" class="input-area hidden">
         <div class="input-glass-container">
-            <input type="text" id="user-input" placeholder="Sussurre para o Oráculo...">
+            <input type="text" id="user-input" placeholder="Pergunte sobre sua essência...">
             <button id="send-btn" onclick="sendMessage()">ü</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="paywall-popup" class="popup-glass hidden">
+        <div class="popup-content" style="position: relative;">
+            <span onclick="fecharPopUpDourado()" style="position: absolute; top: 10px; right: 15px; font-size: 28px; color: var(--gold); cursor: pointer; line-height: 1;">&times;</span>
+            <h3>Primeira Camada Concluída</h3>
+            <p>O Oráculo mapeou as bordas da sua alma. O Veredito Final aguarda a sua oferenda no Dossiê.</p>
+            <button class="btn-primary" onclick="irParaVeredito()">Ir para o Veredito</button>
+        </div>
+    </div>
+
+    <div id="custom-alert" class="popup-glass hidden">
+        <div class="popup-content alert-border">
+            <h3 id="alert-title">Sussurro do Oráculo</h3>
+            <p id="alert-message">Mensagem aqui...</p>
+            <div id="alert-buttons" class="button-row"></div>
+        </div>
+    </div>
+
+    <div id="dossie-modal" class="bottom-sheet hidden">
+        <div id="drag-handle-area" class="drag-handle-area">
+            <div class="drag-handle"></div>
+        </div>
+        <div id="dossie-content" class="dossie-scrollable">
+            </div>
+    </div>
+
+    <script src="script-core.js"></script>
+    <script src="script-chat.js"></script>
+
 </body>
-</html> 
+</html>
