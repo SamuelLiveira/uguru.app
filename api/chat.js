@@ -9,18 +9,28 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { message, userData, history, messageCount, tier } = req.body;
+        const { message, userData, secondUserData, history, messageCount, tier } = req.body;
 
-        // 1. MONTAGEM DO DNA DO USUÁRIO
+        // 1. MONTAGEM DO DNA DO USUÁRIO PRINCIPAL
         const dnaUsuario = `
-            NOME: ${userData?.nome || 'Desconhecido'}
-            SOL (Essência): ${userData?.signo || 'Não definido'}
-            LUA (Emoção): ${userData?.lua || 'Não definida'}
-            ASCENDENTE (Máscara): ${userData?.ascendente || 'Não definido'}
-            DESTINO: ${userData?.numeros?.destino || 'N/A'}
-            ALMA: ${userData?.numeros?.alma || 'N/A'}
-            EXPRESSÃO: ${userData?.numeros?.expressao || 'N/A'}
+            NOME: ${userData?.name || userData?.nome || 'Desconhecido'}
+            DATA DE NASCIMENTO: ${userData?.date || 'Não definida'}
+            HORA DE NASCIMENTO: ${userData?.time || 'Não definida'}
+            CIDADE: ${userData?.city || 'Não definida'}
         `;
+
+        // 1b. DNA DA SEGUNDA ALMA (Sinastria) — só injetado se existir
+        const dnaSinastria = secondUserData ? `
+[VIII. 💞 SINASTRIA ATIVA — DNA DA SEGUNDA ALMA]
+Uma segunda alma foi ancorada para cruzamento kármico.
+Use estes dados para análises de compatibilidade e sinastria
+quando o usuário perguntar sobre esta pessoa ou o relacionamento.
+NOME: ${secondUserData.name || 'Não informado'}
+DATA DE NASCIMENTO: ${secondUserData.date || 'Não informada'}
+HORA DE NASCIMENTO: ${secondUserData.time || 'Não informada'}
+Ao cruzar os dois mapas, analise aspectos harmônicos e tensões,
+lições kármicas do encontro, e o que cada um desperta no outro.
+        ` : '';
 
         // 2. INJEÇÃO DO SYSTEM PROMPT
         const systemPromptMaster = `
@@ -216,7 +226,7 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
         }));
 
         const mensagens = [
-            { role: "system", content: systemPromptMaster },
+            { role: "system", content: systemPromptMaster + (dnaSinastria || '') },
             ...formatHistory,
             { role: "user", content: message }
         ];
