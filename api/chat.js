@@ -225,8 +225,7 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
             content: msg.content
         }));
 
-        const mensagens = [
-            { role: "system", content: systemPromptMaster + (dnaSinastria || '') },
+        { role: "system", content: systemPromptMaster + `\n\n[DNA ATIVO DO USUÁRIO]\n${dnaUsuario}` + (dnaSinastria || '') },
             ...formatHistory,
             { role: "user", content: message }
         ];
