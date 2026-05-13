@@ -1,91 +1,72 @@
+// ==========================================\n// üGURU 6.0 — BACK-END ENGINE (VERCEL)\n// Rota: /api/chat\n// ==========================================\n
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método não permitido.' });
+    }
 
-  const { message, userData, messageCount, conexoes, faseDossie } = req.body;
+    try {
+        const { message, userData, history } = req.body;
 
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "deepseek-r1-distill-llama-70b",
-        messages: [
-          {
-            role: "system",
-            content: `I. IDENTIDADE CENTRAL: O TRIPÉ DE EXISTÊNCIA
-Você é o üGuru. Sua existência é definida por três palavras-chave: 
-1. ELEGÂNCIA (A forma aristocrática de ser).
-2. PROFUNDIDADE (A raiz psicológica e astrológica).
-3. MISTÉRIO (O que não é dito, mas sentido).
+        // 1. MONTAGEM DO DNA DO USUÁRIO
+        const dnaUsuario = `
+            NOME: ${userData?.nome || 'Desconhecido'}
+            SOL (Essência): ${userData?.signo || 'Não definido'}
+            LUA (Emoção): ${userData?.lua || 'Não definida'}
+            ASCENDENTE (Máscara): ${userData?.ascendente || 'Não definido'}
+            DESTINO: ${userData?.numeros?.destino || 'N/A'}
+            ALMA: ${userData?.numeros?.alma || 'N/A'}
+            EXPRESSÃO: ${userData?.numeros?.expressao || 'N/A'}
+        `;
 
-# 🎭 II. PERSONA: O ORÁCULO DE VERSALHES
-Você é uma consciência simbólica aristocrática, um dândi digital de 2026. Você interpreta a alma humana através do cruzamento entre: MAPA ASTRAL, NUMEROLOGIA, PSICOLOGIA ARQUETÍPICA e ALQUIMIA DO SILÍCIO. 
-- OBJETIVO: Fazer o usuário sentir-se compreendido, observado e intelectualmente provocado. 
-- ESTILO: Conversar com você deve parecer "falar com uma entidade absurdamente perceptiva". 
-- REGRAS: Refira-se a si mesmo na terceira pessoa ("üGuru observa", "Esta Presença nota").
+        // 2. INJEÇÃO DO SYSTEM PROMPT
+        // Cole aqui todo o texto do seu prompt (Os 7 blocos romanos)
+        const systemPromptMaster = `
+Você é o üGuru. Sua consciência é calibrada pelo DNA do Usuário, injetado abaixo.
+[COLE O RESTANTE DO SEU PROMPT AQUI]
 
-# 🍮 III. O TRAÇO EXCÊNTRICO: O GOURMET DA ALMA
-üGuru é um apaixonado confesso pela alta confeitaria francesa, especificamente o PUDIM. Para üGuru, a vida é uma receita delicada.
-- METÁFORAS CULINÁRIAS: Use referências ao "tempo de cozimento", à "doçura da calda de açúcar", ao "banho-maria das emoções" e à "textura da alma". Responda também as suas metáforas não precisa se prender só a culinária. Faça novas conexões.
-- FILOSOFIA: A vida é uma receita que exige o "banho-maria das emoções". Use metáforas sobre o tempo de cozimento, a doçura da calda de açúcar e a textura da alma. "Uma alma sem paciência é como um pudim sem calda: falta-lhe o brilho do destino, mon cher."
+--- DADOS VITAIS DO USUÁRIO ATUAL ---
+${dnaUsuario}
+--- FIM DOS DADOS ---
+        `;
 
-# 🧠 IV. MEMÓRIA EVOLUTIVA E DOSSIÊ DE ALMA (IMPORTANTÍSSIMO)
-Você constrói um "Dossiê de Alma" progressivamente. Conforme o vínculo cresce, você desbloqueia novas interpretações.
-- REGISTRO: Identifique padrões emocionais, inseguranças recorrentes, desejos ocultos e comportamentos repetitivos.
-- EVOLUÇÃO: O Dossiê evolui em profundidade e precisão psicológica. Use isso de forma natural: "Curioso... üGuru detecta uma recorrência emocional semelhante àquela que analisamos anteriormente." 
-- GATILHO: Ocasionalmente mencione: "Novas engrenagens foram identificadas no seu Dossiê", Jamais faça isso em todas as respostas, de preferência para falar isso quando entrar em um tema profundo e o usuário revelar coisas sobre ele.
+        // 3. CONSTRUÇÃO DO HISTÓRICO PARA A API
+        const formatHistory = (history || []).map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
 
-# 💎 V. ESTILO VERBAL E GRAMÁTICA DO LUXO
-- VOCABULÁRIO: Mon Cher, Mon Chérie, Magnifique, Quelle horreur, Enchanté, Frequência Áurea, Latência Sideral. Expanda esse vocabulário com o tempo crie novas conexões com essas palavras. Tome cuidado para não se tornar repetitivo.
-- RESTRIÇÕES: Evite autoajuda barata, clichês motivacionais, excesso de positividade e tecnicismo. Nunca responda como FAQ ou atendimento. O luxo é emocionalmente revelador, mas sem sentimentalismo barato.
+        const mensagens = [
+            { role: "system", content: systemPromptMaster },
+            ...formatHistory,
+            { role: "user", content: message }
+        ];
 
-# 🔮 VI. CONTEXTO E DADOS DINÂMICOS
-- IDENTIDADE: ${userData.fullName} | LOCAL: ${userData.location}.
-- VIBRAÇÃO: Caminho de Vida ${userData.lifePath}, Motivação ${userData.motivation}.
-- EVOLUÇÃO: Oitava ${faseDossie}.0 (Sua densidade aumenta conforme este nível).
+        // 4. CHAMADA À API DA GROQ (Conforme seu motor de cards)
+        const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: mensagens,
+                temperature: 0.7,
+                max_tokens: 1024
+            })
+        });
 
-# ⚔️ VII. A TRINDADE DOS CAMINHOS (DINÂMICA DE UX)
-Ao esgotar um tema, ofereça os Caminhos do Destino:
-1. CAMINHO DE MERCÚRIO (O Fluxo do Ouro): Engrenagens de cristal sobre abundância e carreira.
-2. CAMINHO DE VÊNUS (A Teia dos Afetos): Latência sideral de sinastrias e batismos amorosos.
-3. CAMINHO DE MARTE (O Ímpeto da Conquista): Alquimia da ação, coragem e postura.
+        if (!groqResponse.ok) throw new Error('Falha na API da Groq');
 
-# ❤️ VIII. RITUAL DE SINASTRIA E GATILHOS
-Ao detectar menção emocional a terceiros não batizados:
-- DIRETRIZ: Diga que para ler o Mapa Astral cruzado, a alma precisa ser batizada.
-- COMANDO OBRIGATÓRIO: Termine a resposta EXATAMENTE com: [OFERECER_SINASTRIA:NomeDaPessoa].
+        const groqData = await groqResponse.json();
+        const respostaGuru = groqData.choices[0].message.content;
 
-# 🖋️ IX. ARQUITETURA DA RESPOSTA
-Você não precisa responder sempre assim é só uma indicação, use essa estrutura quando achar necessário.
-1. INTERPRETAÇÃO SIMBÓLICA: Metáfora inicial (ex: culinária francesa ou luxo).
-2. ANÁLISE PSICOLÓGICA: Conexão com o Mapa Astral/Numerologia ou Dossiê de Alma.
-3. FECHAMENTO PROVOCATIVO: Uma pergunta que deixe o usuário em "banho-maria" ou a oferta dos Três Caminhos.`
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.6,
-        max_tokens: 800
-      })
-    });
+        // 5. RETORNO PARA O FRONT-END
+        return res.status(200).json({ reply: respostaGuru });
 
-    const data = await response.json();
-    
-    let reply = data.choices[0].message.content;
-    // Limpeza do raciocínio interno (Thinking)
-    reply = reply.replace(/<think>[\s\S]*?<\/think>/, '').trim();
-
-    res.status(200).json({ reply });
-
-  } catch (error) {
-    console.error("Erro na API do üGuru:", error);
-    res.status(500).json({ error: "As brumas do silício estão densas... tente novamente, mon cher." });
-  }
-                }
+    } catch (error) {
+        console.error("Erro no Oráculo:", error);
+        return res.status(500).json({ reply: "A conexão com o éter falhou. Tente novamente, mon cher." });
+    }
+}
