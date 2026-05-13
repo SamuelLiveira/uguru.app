@@ -1,0 +1,497 @@
+/* ==========================================
+   üGURU 3.8 — SUNSET LUXURY (FULL RESET)
+   [AUDITORIA GADÚ: PEÇA 2 + CORREÇÕES CHAT + HITBOX + CARD MAJESTOSO]
+========================================== */
+
+:root {
+    --gold: #e6c068;
+    --gold-bright: #fff1c2;
+    --sun-glow: #ffb36a;
+    --sky-deep: #0b1026;
+    --sky-mid: #1a0f1f;
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 241, 194, 0.12);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--sky-deep) 0%, var(--sky-mid) 100%) fixed;
+    color: #f6edd6;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: env(safe-area-inset-top) 18px 0;
+    overflow-x: hidden;
+}
+
+/* LOGO & TEXTOS */
+.logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem;
+    color: var(--gold-bright);
+    margin: 40px 0 10px;
+    text-shadow: 0 0 20px rgba(230, 192, 104, 0.3);
+}
+
+.subtitle { font-size: 0.85rem; opacity: 0.7; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+
+.glow-text {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    margin-bottom: 25px;
+    font-size: 1.6rem;
+}
+
+/* CONTAINERS */
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: var(--glass);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    padding: 30px 22px;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+/* INPUTS */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+input, select {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s ease;
+}
+
+input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
+
+/* BOTÕES */
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--sun-glow));
+    color: #0b1026;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-weight: 700;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(230, 192, 104, 0.15);
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+    padding: 18px;
+    border-radius: 16px;
+    flex: 1;
+    cursor: pointer;
+}
+
+.button-row { display: flex; gap: 12px; width: 100%; }
+
+/* BARRA DE SINCRONIA */
+#sync-bar-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 5px;
+    background: rgba(255,255,255,0.05); z-index: 3000;
+}
+#sync-bar-fill {
+    width: 0%; height: 100%; background: var(--gold);
+    box-shadow: 0 0 10px var(--gold);
+    transition: width 0.8s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+/* O OLHO (DISCRETO À ESQUERDA) */
+#dossie-eye {
+    position: fixed; top: 15px; left: 15px;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; z-index: 3001; cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%; backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: 0.6s ease;
+}
+
+.runa-oculta { opacity: 0.15; filter: grayscale(1); }
+.runa-desperta {
+    opacity: 0.9 !important; filter: grayscale(0) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 15px var(--gold);
+}
+
+/* ==========================================
+   CARDS DO BANQUETE
+   FIX DE HITBOX: banquete-wrapper com padding
+   suficiente para o botão "Entrar no Salão"
+========================================== */
+
+#banquete-wrapper {
+    width: 100%;
+    max-width: 450px;
+    padding-bottom: 100px; /* espaço generoso acima do input fixo */
+    padding-top: 60px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid var(--gold);
+    padding: 22px; margin-bottom: 15px;
+    border-radius: 0 20px 20px 0; text-align: left;
+    transition: all 0.4s ease;
+}
+
+.card h3 { font-family: 'Playfair Display', serif; color: var(--gold-bright); margin-bottom: 8px; }
+
+/* CARD 7: VEREDITO (Estado Base) */
+.card-7 {
+    border: 2px solid var(--gold);
+    background: rgba(230, 192, 104, 0.05);
+    border-radius: 20px !important;
+    position: relative;
+    z-index: 20;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.locked {
+    filter: blur(5px) grayscale(1);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ==========================================
+   CARD 7: MAJESTOSO (ESTADO DESBLOQUEADO PREMIUM)
+   Adicionado por Gadú Office 💭
+========================================== */
+.card-7.unlocked-majestoso {
+    min-height: 280px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(85, 62, 5, 0.3) 100%);
+    border: 2px solid #b8860b; /* Ouro envelhecido e profundo */
+    box-shadow: 0 0 40px rgba(184, 134, 11, 0.5);
+    transform: scale(1.03);
+    z-index: 30; /* Eleva acima dos outros cards */
+}
+
+.card-7.unlocked-majestoso h3 {
+    color: #fff1c2;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 241, 194, 0.5);
+    margin-bottom: 12px;
+}
+
+/* Botão Baixar Dossiê dentro do Card 7 */
+.btn-dossie-baixar {
+    display: block;
+    margin-top: 20px;
+    width: 100%;
+    position: relative;
+    z-index: 30;
+    pointer-events: auto !important;
+}
+
+.card7-locked-text {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.6;
+    margin-bottom: 4px;
+}
+
+/* ==========================================
+   CHAT — COMPORTAMENTO WHATSAPP
+========================================== */
+
+#chat-container {
+    width: 100%;
+    max-width: 450px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 70px 0 130px;
+    overflow-y: auto;
+    flex: 1;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+#chat-messages::-webkit-scrollbar { width: 0; }
+#chat-messages { scrollbar-width: none; }
+
+.message {
+    padding: 14px 18px; border-radius: 20px;
+    max-width: 85%; font-size: 0.95rem; line-height: 1.5;
+    animation: fadeIn 0.4s ease forwards;
+    word-wrap: break-word;
+}
+
+.user-msg {
+    background: rgba(255,255,255,0.08);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.guru-msg {
+    background: var(--gold-bright);
+    color: #121212;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    font-weight: 500;
+}
+
+/* LOADER DO ORÁCULO */
+#oracle-loading {
+    align-self: flex-start;
+    padding: 14px 18px;
+    background: rgba(230, 192, 104, 0.1);
+    border-radius: 20px;
+    border-bottom-left-radius: 4px;
+    max-width: 85%;
+}
+
+.loading-text {
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-style: italic;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ==========================================
+   INPUT BAR — sempre fixo acima do teclado
+========================================== */
+
+.input-area {
+    position: fixed;
+    bottom: 25px;
+    width: 92%;
+    max-width: 400px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+}
+
+.input-glass-container {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 35px;
+    padding: 6px 6px 6px 20px;
+    display: flex;
+    align-items: center;
+}
+
+#user-input { flex: 1; background: none; border: none; color: #fff; font-size: 16px; outline: none; }
+#send-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--gold); border: none; color: #000;
+    font-size: 20px; cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* POPUPS */
+.popup-glass {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 4000; padding: 20px; backdrop-filter: blur(10px);
+}
+
+.popup-content {
+    background: var(--sky-deep); border: 1px solid var(--gold);
+    padding: 30px; border-radius: 25px; text-align: center;
+    max-width: 340px;
+}
+
+.hidden { display: none !important; }
+.reset-link { margin-top: 20px; font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; cursor: pointer; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ALERTA PREMIUM */
+.alert-border {
+    border: 1px solid var(--gold) !important;
+    box-shadow: 0 0 30px rgba(230, 192, 104, 0.1);
+}
+
+#alert-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+#alert-message {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    color: #f6edd6;
+    opacity: 0.9;
+}
+
+#alert-buttons .btn-primary,
+#alert-buttons .btn-secondary {
+    padding: 12px;
+    font-size: 0.8rem;
+}
+
+/* ==========================================
+   MODAL DOSSIÊ (BOTTOM SHEET COM SWIPE)
+========================================== */
+
+.bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 88vh;
+    background: var(--sky-deep);
+    border-top-left-radius: 35px;
+    border-top-right-radius: 35px;
+    box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.9);
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform: translateY(100%);
+    border-top: 2px solid var(--gold);
+}
+
+.bottom-sheet.show {
+    transform: translateY(0);
+}
+
+.drag-handle-area {
+    width: 100%;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.drag-handle {
+    width: 50px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.drag-handle-area:active .drag-handle {
+    background: var(--gold);
+}
+
+.dossie-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 25px 40px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dossie-scrollable::-webkit-scrollbar { width: 0; }
+.dossie-scrollable { scrollbar-width: none; }
+/* ==========================================
+   ESTÉTICA TÁTIL GADÚ — EFEITOS DE CLIQUE
+========================================== */
+
+/* Efeito universal para botões e elementos clicáveis */
+.btn-primary, 
+.btn-secondary, 
+#send-btn, 
+.btn-dossie-baixar,
+.btn-locked,
+[onclick] {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                filter 0.2s ease, 
+                box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+/* O "Ósculo" do Clique (Ao pressionar) */
+.btn-primary:active, 
+.btn-secondary:active, 
+#send-btn:active, 
+.btn-dossie-baixar:active,
+[onclick]:active {
+    transform: scale(0.94); /* Leve compressão, como se afundasse */
+    filter: brightness(1.2); /* Um brilho súbito de feedback */
+    box-shadow: 0 0 15px rgba(230, 192, 104, 0.4); /* Um halo dourado momentâneo */
+}
+
+/* Feedback especial para o botão de envio 'ü' */
+#send-btn:active {
+    background: var(--gold-bright) !important;
+    color: #0b1026 !important;
+}
+
+/* Suavidade para os Cards quando clicados (se houver ação neles) */
+.card:active {
+    transform: scale(0.98);
+}
+/* ==========================================
+   üGURU — CORREÇÕES DE LAYOUT (PATCH)
+   Aplique estas regras NO FINAL do style.css
+========================================== */
+
+/* FIX: Chat não fica escondido atrás do input no celular */
+#chat-container {
+    height: calc(100vh - 5px); /* desconta a sync-bar do topo */
+    padding-bottom: 0;
+}
+
+#chat-messages {
+    padding-top: 60px;
+    padding-bottom: 160px; /* espaço generoso acima do input */
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* FIX: Input sempre visível acima do teclado no iOS/Android */
+.input-area {
+    bottom: env(safe-area-inset-bottom, 20px);
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+/* FIX: Olho aceso (classe .active usada pelo JS) */
+#dossie-eye.active {
+    opacity: 0.9;
+    filter: grayscale(0);
+    border-color: var(--gold);
+    box-shadow: 0 0 15px var(--gold);
+}
