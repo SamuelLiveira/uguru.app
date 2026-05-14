@@ -17,6 +17,12 @@ export default async function handler(req, res) {
             DATA DE NASCIMENTO: ${userData?.date || 'Não definida'}
             HORA DE NASCIMENTO: ${userData?.time || 'Não definida'}
             CIDADE: ${userData?.city || 'Não definida'}
+            SOL (Essência): ${userData?.sol || 'Não calculado'}
+            LUA (Emoção): ${userData?.lua || 'Não calculada'}
+            ASCENDENTE (Máscara): ${userData?.ascendente || 'Não calculado'}
+            DESTINO: ${userData?.destino || 'Não calculado'}
+            EXPRESSÃO: ${userData?.expressao || 'Não calculada'}
+            MISSÃO: ${userData?.missao || 'Não calculada'}
         `;
 
         // 1b. DNA DA SEGUNDA ALMA (Sinastria) — só injetado se existir
