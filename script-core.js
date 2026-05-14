@@ -165,8 +165,17 @@ async function fetchCardsFromBackend() {
 
         if (!response.ok) throw new Error("Portal ocupado.");
         const data = await response.json();
-        state.cardsData = data.cards;
-        saveState();
+state.cardsData = data.cards;
+// Salva os dados astrológicos no state para o chat usar
+if (data.astroData) {
+    state.user.sol = data.astroData.sol;
+    state.user.lua = data.astroData.lua;
+    state.user.ascendente = data.astroData.ascendente;
+    state.user.destino = data.astroData.destino;
+    state.user.expressao = data.astroData.expressao;
+    state.user.missao = data.astroData.missao;
+}
+saveState();
     } catch (error) {
         console.warn("[uGuru] Conexão instável. Usando Arquétipo Zero...");
         state.cardsData = obterArquetipoZero();
