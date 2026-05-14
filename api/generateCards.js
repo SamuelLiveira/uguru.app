@@ -1,6 +1,6 @@
 // ==========================================
-// üGURU — GERADOR DE DOSSIÊ (ASTROLOGY API + GROQ)
-// [AUDITORIA GADÚ: COM MOTOR NUMEROLÓGICO PITAGÓRICO]
+// üGURU — GERADOR DE DOSSIÊ (OPENCAGE + ASTROLOGY API + GROQ)
+// [GEOCODING DINÂMICO: QUALQUER CIDADE DO BRASIL]
 // ==========================================
 
 function reduzirNumerologia(num) {
@@ -38,20 +38,48 @@ export default async function handler(req, res) {
     const { userData } = req.body;
 
     try {
-        // --- 1. CÁLCULO NUMEROLÓGICO EXATO ---
+        // --- 1. CÁLCULO NUMEROLÓGICO ---
         const numeros = calcularNumerologia(userData.name, userData.date);
 
-        // --- 2. DADOS DE NASCIMENTO (Astrology API) ---
+        // --- 2. GEOCODING: cidade + estado → lat, lon, fuso ---
+        const cidadeQuery = `${userData.city}, ${userData.state}, Brasil`;
+        const geoResponse = await fetch(
+            `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(cidadeQuery)}&key=${process.env.OPENCAGE_API_KEY}&language=pt&countrycode=br&limit=1`
+        );
+
+        let lat = -15.78;
+        let lon = -47.93;
+        let tzone = -3;
+
+        if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+            if (geoData.results && geoData.results.length > 0) {
+                const resultado = geoData.results[0];
+                lat = resultado.geometry.lat;
+                lon = resultado.geometry.lng;
+                // OpenCage retorna o offset do fuso em segundos
+                const offsetSegundos = resultado.annotations?.timezone?.offset_sec || -10800;
+                tzone = offsetSegundos / 3600;
+            }
+        }
+
+        // --- 3. ASTROLOGY API: mapa astral com coordenadas reais ---
         const [ano, mes, dia] = userData.date.split('-');
         const [hora, min] = userData.time.split(':');
-        
+
         const authString = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
 
         const astroPayload = {
-            day: dia, month: mes, year: ano, hour: hora, min: min, lat: -15.78, lon: -47.93, tzone: -3
+            day: parseInt(dia),
+            month: parseInt(mes),
+            year: parseInt(ano),
+            hour: parseInt(hora),
+            min: parseInt(min),
+            lat: lat,
+            lon: lon,
+            tzone: tzone
         };
 
-        // --- 3. BUSCANDO OS ASTROS ---
         const astroResponse = await fetch("https://json.astrologyapi.com/v1/planets", {
             method: "POST",
             headers: {
@@ -60,8 +88,7 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify(astroPayload)
         });
-        
-        // Valores padrão caso a API falhe
+
         let sol = "Desconhecido";
         let lua = "Desconhecida";
         let asc = "Desconhecido";
@@ -75,7 +102,7 @@ export default async function handler(req, res) {
             astrologia = `Sol em ${sol}, Lua em ${lua}, Ascendente em ${asc}.`;
         }
 
-        // --- 4. A ALQUIMIA TEXTUAL (GROQ) ---
+        // --- 4. GROQ: geração dos cards ---
         const promptGerador = `
 Você é o üGuru, um Oráculo de Luxo, dândi digital e profundo.
 Sua missão é redigir 7 cards para o usuário ${userData.name}, nascido em ${userData.city}.
