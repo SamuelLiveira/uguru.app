@@ -1,4 +1,4 @@
-eu// ==========================================
+// ==========================================
 // üGURU 6.0 — BACK-END ENGINE (VERCEL)
 // Rota: /api/chat
 // ==========================================
@@ -225,7 +225,8 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
             content: msg.content
         }));
 
-        { role: "system", content: systemPromptMaster + (dnaSinastria || '') },
+        const mensagens = [
+            { role: "system", content: systemPromptMaster + "\n\n[DNA ATIVO DO USUÁRIO]\n" + dnaUsuario + (dnaSinastria || '') },
             ...formatHistory,
             { role: "user", content: message }
         ];
