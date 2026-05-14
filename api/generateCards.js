@@ -3,7 +3,6 @@
 // [AUDITORIA GADÚ: COM MOTOR NUMEROLÓGICO PITAGÓRICO]
 // ==========================================
 
-// Função auxiliar: Reduz números para 1 a 9 (ou números mestres 11, 22, 33)
 function reduzirNumerologia(num) {
     while (num > 9 && num !== 11 && num !== 22 && num !== 33) {
         num = String(num).split('').reduce((acc, digit) => acc + parseInt(digit), 0);
@@ -11,7 +10,6 @@ function reduzirNumerologia(num) {
     return num;
 }
 
-// O Motor Pitagórico do üGuru
 function calcularNumerologia(nome, dataStr) {
     const pitagoras = {
         a:1, b:2, c:3, d:4, e:5, f:6, g:7, h:8, i:9,
@@ -19,19 +17,16 @@ function calcularNumerologia(nome, dataStr) {
         s:1, t:2, u:3, v:4, w:5, x:6, y:7, z:8
     };
 
-    // 1. Destino (Soma da Data de Nascimento: YYYY-MM-DD)
-    const digitosData = dataStr.replace(/\\D/g, '');
+    const digitosData = dataStr.replace(/\D/g, '');
     let somaData = 0;
     for(let char of digitosData) somaData += parseInt(char);
     const destino = reduzirNumerologia(somaData);
 
-    // 2. Expressão (Soma do Nome Completo)
-    const nomeLimpo = nome.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z]/g, "");
+    const nomeLimpo = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "");
     let somaNome = 0;
     for(let char of nomeLimpo) somaNome += pitagoras[char] || 0;
     const expressao = reduzirNumerologia(somaNome);
 
-    // 3. Missão (Destino + Expressão)
     const missao = reduzirNumerologia(destino + expressao);
 
     return { destino, expressao, missao };
@@ -52,7 +47,6 @@ export default async function handler(req, res) {
         
         const authString = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
 
-        // (Para MVP usamos uma coordenada central para evitar complexidade do Geocoding antes do tempo)
         const astroPayload = {
             day: dia, month: mes, year: ano, hour: hora, min: min, lat: -15.78, lon: -47.93, tzone: -3
         };
@@ -67,12 +61,17 @@ export default async function handler(req, res) {
             body: JSON.stringify(astroPayload)
         });
         
+        // Valores padrão caso a API falhe
+        let sol = "Desconhecido";
+        let lua = "Desconhecida";
+        let asc = "Desconhecido";
         let astrologia = "Aguardando alinhamento estelar.";
+
         if (astroResponse.ok) {
             const astroData = await astroResponse.json();
-            const sol = astroData.find(p => p.name === "Sun")?.sign || "Desconhecido";
-            const lua = astroData.find(p => p.name === "Moon")?.sign || "Desconhecido";
-            const asc = astroData.find(p => p.name === "Ascendant")?.sign || "Desconhecido";
+            sol = astroData.find(p => p.name === "Sun")?.sign || "Desconhecido";
+            lua = astroData.find(p => p.name === "Moon")?.sign || "Desconhecida";
+            asc = astroData.find(p => p.name === "Ascendant")?.sign || "Desconhecido";
             astrologia = `Sol em ${sol}, Lua em ${lua}, Ascendente em ${asc}.`;
         }
 
@@ -118,7 +117,18 @@ Formato OBRIGATÓRIO de saída (Estritamente JSON, sem blocos de código):
         const groqData = await groqResponse.json();
         const jsonResult = JSON.parse(groqData.choices[0].message.content);
 
-        res.status(200).json({ cards: jsonResult.cards });
+        // 5. RETORNO: cards + dados astrológicos para o frontend salvar no state
+        res.status(200).json({
+            cards: jsonResult.cards,
+            astroData: {
+                sol: sol,
+                lua: lua,
+                ascendente: asc,
+                destino: numeros.destino,
+                expressao: numeros.expressao,
+                missao: numeros.missao
+            }
+        });
 
     } catch (error) {
         console.error("[uGuru_Debug] Erro ao gerar cards:", error);
