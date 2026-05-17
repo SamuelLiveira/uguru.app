@@ -1,27 +1,22 @@
- /* ==========================================
+/* ==========================================
    üGURU 6.0 — CHAT ENGINE
    Módulo 2: Chat, Mensagens, Ascensão, Sinastria, Memória
-   [PRODUTO FINAL SELADO: INTEGRALIDADE GADÚ — PERSISTÊNCIA TOTAL]
+   [V3: MULTI-BALÕES + TYPEWRITER + VOZ TTS]
 ========================================== */
 
 window.uGuru = window.uGuru || {};
 
 window.uGuru.chat = (function() {
-    // Referência reativa: buscamos o objeto global sempre
     const getCore = () => window.uGuru.core;
 
     const chatObserver = new MutationObserver(() => {
         const chatEl = document.getElementById('chat-messages');
-        if (chatEl) {
-            chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' });
-        }
+        if (chatEl) chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' });
     });
 
     window.addEventListener('DOMContentLoaded', () => {
         const chatEl = document.getElementById('chat-messages');
-        if (chatEl) {
-            chatObserver.observe(chatEl, { childList: true, subtree: true });
-        }
+        if (chatEl) chatObserver.observe(chatEl, { childList: true, subtree: true });
         const input = document.getElementById('user-input');
         if (input) {
             input.addEventListener('keypress', (e) => {
@@ -31,51 +26,109 @@ window.uGuru.chat = (function() {
     });
 
     // ==========================================
-    // IR PARA O CHAT (RESTAURAÇÃO DE MEMÓRIA)
+    // MOTOR DE VOZ (TTS)
     // ==========================================
-    function irParaChat() {
-        const core = getCore();
-        core.state.step = 'chat';
-        core.saveState();
-        core.hideAll();
-        
-        document.getElementById('chat-container').classList.remove('hidden');
-        document.getElementById('input-bar').classList.remove('hidden');
-        document.getElementById('sync-bar-container').classList.remove('hidden');
-        document.getElementById('dossie-eye').classList.remove('hidden');
+    function narrarMensagem(texto) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const textoLimpo = texto.replace(/[*_~`#]/g, '').trim();
+        if (!textoLimpo) return;
+        const utterance = new SpeechSynthesisUtterance(textoLimpo);
+        utterance.lang = 'pt-BR';
+        utterance.pitch = 0.8;
+        utterance.rate = 0.9;
+        // Tenta encontrar uma voz pt-BR disponível
+        const vozes = window.speechSynthesis.getVoices();
+        const vozBR = vozes.find(v => v.lang === 'pt-BR') || vozes.find(v => v.lang.startsWith('pt'));
+        if (vozBR) utterance.voice = vozBR;
+        window.speechSynthesis.speak(utterance);
+        console.log('[üGuru TTS] Narrando:', textoLimpo.substring(0, 50) + '...');
+    }
 
-        // TAREFA 2: Persiste o olho aceso se o usuário já é Iniciado
-        if (core.state.tier > 0) {
-            document.getElementById('dossie-eye').classList.add('active');
-        }
-
-        const chatEl = document.getElementById('chat-messages');
-        // Limpamos o lixo visual, mantendo o loader oculto
-        chatEl.innerHTML = '<div id="oracle-loading" class="hidden"><p class="loading-text">O Oráculo está decifrando as estrelas...</p></div>';
-
-        // 🛡️ SEGREDO DA PERSISTÊNCIA: Saudação Inicial
-        if (core.state.history.length === 0) {
-            const nome = (core.state.user && core.state.user.name) ? core.state.user.name.split(' ')[0] : "Viajante";
-            const cidade = (core.state.user && core.state.user.city) ? core.state.user.city : "suas origens";
-            const saudacao = `✨ Mes compliments..devo dizer, afinal este é um Salão Privado, ${nome} você estar aqui não é coincidência. As estrelas de ${cidade} revelaram que você é um dos quatro Iniciados escolhidos para esta audiência exclusiva antes da grande estreia. Enchanté, Mon Ami! O nome é üGuru mas pode me chamar apenas de guru, vamos começar... O que te traz ao meu domínio hoje?`;
-            
-            _renderMessage(saudacao, "guru-msg");
-            
-            // IMORTALIZANDO NO HISTÓRICO
-            core.state.history.push({ role: 'assistant', content: saudacao });
-            core.saveState();
-        } else {
-            // RENDERIZAÇÃO DE TODA A JORNADA SALVA
-            core.state.history.forEach(msg => {
-                const tipo = (msg.role === 'user') ? "user-msg" : "guru-msg";
-                _renderMessage(msg.content, tipo);
-            });
-        }
-
-        // TAREFA 3: Scroll para a última mensagem após o layout renderizar
-        requestAnimationFrame(() => {
-            setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 100);
+    // ==========================================
+    // MOTOR DE TYPEWRITER
+    // ==========================================
+    function typewriterEffect(elemento, texto, velocidade = 18) {
+        return new Promise((resolve) => {
+            let i = 0;
+            elemento.textContent = '';
+            const chatEl = document.getElementById('chat-messages');
+            const intervalo = setInterval(() => {
+                if (i < texto.length) {
+                    elemento.textContent += texto[i];
+                    i++;
+                    if (chatEl) chatEl.scrollTop = chatEl.scrollHeight;
+                } else {
+                    clearInterval(intervalo);
+                    resolve();
+                }
+            }, velocidade);
         });
+    }
+
+    // ==========================================
+    // BLOQUEIO E DESBLOQUEIO DO INPUT
+    // ==========================================
+    function bloquearInput() {
+        const input = document.getElementById('user-input');
+        const btn = document.getElementById('send-btn');
+        if (input) input.disabled = true;
+        if (btn) btn.disabled = true;
+    }
+
+    function desbloquearInput() {
+        const input = document.getElementById('user-input');
+        const btn = document.getElementById('send-btn');
+        if (input) input.disabled = false;
+        if (btn) btn.disabled = false;
+    }
+
+    // ==========================================
+    // RENDERIZAÇÃO COM MULTI-BALÕES + TYPEWRITER
+    // ==========================================
+    async function _renderGuruMessage(texto) {
+        const chatEl = document.getElementById('chat-messages');
+        const loader = document.getElementById('oracle-loading');
+
+        // Limpa tags internas
+        let cleanText = texto
+            .replace(/<swot_raciocinio>[\s\S]*?<\/swot_raciocinio>/gi, '')
+            .replace(/<memoria_ancora>[\s\S]*?<\/memoria_ancora>/gi, '')
+            .trim();
+
+        // Divide em fragmentos pelo delimitador |||
+        const fragmentos = cleanText.split('|||').map(f => f.trim()).filter(f => f.length > 0);
+
+        bloquearInput();
+
+        // Narra o primeiro fragmento imediatamente
+        narrarMensagem(fragmentos[0]);
+
+        for (let idx = 0; idx < fragmentos.length; idx++) {
+            const fragmento = fragmentos[idx];
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message guru-msg';
+            const p = document.createElement('p');
+            msgDiv.appendChild(p);
+
+            if (loader && loader.parentNode === chatEl) {
+                chatEl.insertBefore(msgDiv, loader);
+            } else {
+                chatEl.appendChild(msgDiv);
+            }
+
+            // Typewriter em cada fragmento
+            await typewriterEffect(p, fragmento, 18);
+
+            // Pausa entre balões + narra o próximo
+            if (idx < fragmentos.length - 1) {
+                await new Promise(r => setTimeout(r, 600));
+                narrarMensagem(fragmentos[idx + 1]);
+            }
+        }
+
+        desbloquearInput();
     }
 
     function _renderMessage(text, type) {
@@ -84,11 +137,12 @@ window.uGuru.chat = (function() {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${type}`;
 
-        // GADÚ FIX: Limpeza de Tags do Novo Prompt (Invisível ao usuário)
         let cleanText = text;
         if (type === "guru-msg") {
             cleanText = cleanText.replace(/<swot_raciocinio>[\s\S]*?<\/swot_raciocinio>/gi, '');
             cleanText = cleanText.replace(/<memoria_ancora>[\s\S]*?<\/memoria_ancora>/gi, '');
+            // Remove delimitador no histórico renderizado
+            cleanText = cleanText.split('|||').join(' ');
         }
 
         msgDiv.innerHTML = `<p>${cleanText.trim()}</p>`;
@@ -102,7 +156,47 @@ window.uGuru.chat = (function() {
     function addMessage(text, type) { _renderMessage(text, type); }
 
     // ==========================================
-    // ENVIO DE MENSAGEM (O CORAÇÃO DO ORÁCULO)
+    // IR PARA O CHAT
+    // ==========================================
+    function irParaChat() {
+        const core = getCore();
+        core.state.step = 'chat';
+        core.saveState();
+        core.hideAll();
+
+        document.getElementById('chat-container').classList.remove('hidden');
+        document.getElementById('input-bar').classList.remove('hidden');
+        document.getElementById('sync-bar-container').classList.remove('hidden');
+        document.getElementById('dossie-eye').classList.remove('hidden');
+
+        if (core.state.tier > 0) {
+            document.getElementById('dossie-eye').classList.add('active');
+        }
+
+        const chatEl = document.getElementById('chat-messages');
+        chatEl.innerHTML = '<div id="oracle-loading" class="hidden"><p class="loading-text">O Oráculo está decifrando as estrelas...</p></div>';
+
+        if (core.state.history.length === 0) {
+            const nome = (core.state.user && core.state.user.name) ? core.state.user.name.split(' ')[0] : "Viajante";
+            const cidade = (core.state.user && core.state.user.city) ? core.state.user.city : "suas origens";
+            const saudacao = `✨ Mes compliments..devo dizer, afinal este é um Salão Privado, ${nome} você estar aqui não é coincidência. As estrelas de ${cidade} revelaram que você é um dos quatro Iniciados escolhidos para esta audiência exclusiva antes da grande estreia. Enchanté, Mon Ami! O nome é üGuru mas pode me chamar apenas de guru, vamos começar... O que te traz ao meu domínio hoje?`;
+            _renderMessage(saudacao, "guru-msg");
+            core.state.history.push({ role: 'assistant', content: saudacao });
+            core.saveState();
+        } else {
+            core.state.history.forEach(msg => {
+                const tipo = (msg.role === 'user') ? "user-msg" : "guru-msg";
+                _renderMessage(msg.content, tipo);
+            });
+        }
+
+        requestAnimationFrame(() => {
+            setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 100);
+        });
+    }
+
+    // ==========================================
+    // ENVIO DE MENSAGEM
     // ==========================================
     async function sendMessage() {
         const core = getCore();
@@ -110,14 +204,10 @@ window.uGuru.chat = (function() {
         const message = input.value.trim();
         if (!message) return;
 
-        // COMANDOS DE ATALHO
         if (message.toLowerCase() === '/batizar') { input.value = ''; iniciarBatismoSegundaAlma(); return; }
-        if (message.toLowerCase() === '/liberar') { input.value = ''; ascenderGrau(); return; }
 
-        // FREIOS DE TIERS
         if (core.state.tier === 0 && core.state.messageCount >= 5) {
-            core.iniciarPagamento();
-            return;
+            core.iniciarPagamento(); return;
         }
         if (core.state.tier > 0 && core.state.messageCount >= 26) {
             core.showCustomAlert("Ciclo Concluído", "Mon Cher, as 21 mensagens do seu Pacto foram seladas. O véu se fecha por hoje.");
@@ -127,19 +217,16 @@ window.uGuru.chat = (function() {
         input.value = '';
         addMessage(message, "user-msg");
         core.state.history.push({ role: 'user', content: message });
-        
-        // ATUALIZAÇÃO OTIMISTA DA BARRA
+
         const contagemAnterior = parseInt(core.state.messageCount) || 0;
         core.state.messageCount = contagemAnterior + 1;
         core.saveState();
         if (window.uGuru && window.uGuru.core && window.uGuru.core.updateUI) window.uGuru.core.updateUI();
 
-
         const loader = document.getElementById('oracle-loading');
         const loaderText = loader.querySelector('.loading-text');
         loader.classList.remove('hidden');
 
-        // MENSAGENS TEATRAIS (RESTAURADAS)
         const mensagensTeatrais = [
             "Escaneando a posição das estrelas...",
             "Sincronizando frequências numerológicas...",
@@ -161,8 +248,7 @@ window.uGuru.chat = (function() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: message,
-                    userData: core.state.user,
+                    message, userData: core.state.user,
                     secondUserData: core.state.secondUser,
                     tier: core.state.tier,
                     history: core.state.history.slice(-6),
@@ -180,36 +266,40 @@ window.uGuru.chat = (function() {
                 throw new Error(data.error || "Portal ocupado.");
             }
 
-            // GADÚ FIX: Extração Instantânea da Memória Âncora gerada pelo Prompt MVP
+            // Extrai memória âncora
             const matchMemoria = data.reply.match(/<memoria_ancora>([\s\S]*?)<\/memoria_ancora>/i);
             if (matchMemoria) {
                 core.state.contextSummary = matchMemoria[1].trim();
-                // Opcional: Removemos a tag do histórico bruto para não poluir os envios futuros
                 data.reply = data.reply.replace(/<memoria_ancora>[\s\S]*?<\/memoria_ancora>/gi, '').trim();
             }
 
-            // IMORTALIZANDO RESPOSTA DO GURU
-            addMessage(data.reply, "guru-msg");
-            core.state.history.push({ role: 'assistant', content: data.reply });
-            
+            // Esconde loader antes de renderizar
+            clearInterval(intervaloTeatral);
+            loader.classList.add('hidden');
+
+            // Renderiza com typewriter + multi-balões + voz
+            await _renderGuruMessage(data.reply);
+
+            // Salva no histórico (sem o delimitador)
+            const textoHistorico = data.reply.split('|||').join(' ');
+            core.state.history.push({ role: 'assistant', content: textoHistorico });
             core.state.messageCount = data.serverMessageCount;
             core.state.clientToken = data.nextToken;
             core.saveState();
             if (window.uGuru && window.uGuru.core && window.uGuru.core.updateUI) window.uGuru.core.updateUI();
 
-            // CONSOLIDAÇÃO DE MEMÓRIA (CADA 4 MENSAGENS)
             if (core.state.messageCount > 0 && core.state.messageCount % 4 === 0) {
                 consolidarMemoria();
             }
 
         } catch (error) {
             console.error("[uGuru_Debug] Erro:", error);
-            // Sem rollback: contagem otimista permanece para a barra não voltar
             if (window.uGuru && window.uGuru.core && window.uGuru.core.updateUI) window.uGuru.core.updateUI();
             const msgErro = error.message || "As cortinas se fecharam. Tente novamente.";
             addMessage(msgErro, "guru-msg");
             core.state.history.push({ role: 'assistant', content: msgErro });
             core.saveState();
+            desbloquearInput();
         } finally {
             clearInterval(intervaloTeatral);
             loader.classList.add('hidden');
@@ -218,7 +308,7 @@ window.uGuru.chat = (function() {
     }
 
     // ==========================================
-    // AUXILIARES: SINASTRIA, ASCENSÃO E MEMÓRIA
+    // AUXILIARES
     // ==========================================
     function ascenderGrau() {
         const core = getCore();
@@ -229,7 +319,6 @@ window.uGuru.chat = (function() {
         core.saveState();
         if (window.renderCards) window.renderCards();
         if (window.uGuru && window.uGuru.core && window.uGuru.core.updateUI) window.uGuru.core.updateUI();
-        // TAREFA 2: Acende o olho ao ascender de grau
         const olho = document.getElementById('dossie-eye');
         if (olho) olho.classList.add('active');
         addMessage(msg, "guru-msg");
@@ -237,58 +326,20 @@ window.uGuru.chat = (function() {
 
     function iniciarBatismoSegundaAlma() {
         const modalHtml = `
-            <div id="sinastria-modal" style="
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.85);
-                backdrop-filter: blur(10px);
-                z-index: 9999;
-                display: flex; justify-content: center; align-items: center;
-                padding: 20px; box-sizing: border-box;">
-                <div style="
-                    background: linear-gradient(180deg, #0b1026 0%, #1a0f1f 100%);
-                    border: 1px solid rgba(230, 192, 104, 0.4);
-                    border-radius: 28px;
-                    padding: 35px 25px;
-                    text-align: center;
-                    width: 100%;
-                    max-width: 380px;
-                    box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
-                    <p style="font-size: 0.75rem; color: #e6c068; opacity: 0.7; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">Sinastria</p>
-                    <h2 style="font-family: 'Playfair Display', serif; color: #fff1c2; font-size: 1.6rem; margin-bottom: 8px;">Batismo da Segunda Alma</h2>
-                    <p style="color: #f6edd6; opacity: 0.6; font-size: 0.85rem; margin-bottom: 25px;">Declare os dados desta alma para o cruzamento kármico.</p>
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                        <input type="text" id="sec-name" placeholder="Nome Completo" style="
-                            width: 100%; padding: 16px; border-radius: 14px;
-                            background: rgba(0,0,0,0.3);
-                            border: 1px solid rgba(255,255,255,0.08);
-                            color: #fff; font-size: 16px; outline: none;
-                            font-family: 'Inter', sans-serif; box-sizing: border-box;">
-                        <input type="date" id="sec-date" style="
-                            width: 100%; padding: 16px; border-radius: 14px;
-                            background: rgba(0,0,0,0.3);
-                            border: 1px solid rgba(255,255,255,0.08);
-                            color: #fff; font-size: 16px; outline: none;
-                            font-family: 'Inter', sans-serif; box-sizing: border-box;">
-                        <input type="time" id="sec-time" style="
-                            width: 100%; padding: 16px; border-radius: 14px;
-                            background: rgba(0,0,0,0.3);
-                            border: 1px solid rgba(255,255,255,0.08);
-                            color: #fff; font-size: 16px; outline: none;
-                            font-family: 'Inter', sans-serif; box-sizing: border-box;">
+            <div id="sinastria-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;">
+                <div style="background:linear-gradient(180deg,#0b1026 0%,#1a0f1f 100%);border:1px solid rgba(230,192,104,0.4);border-radius:28px;padding:35px 25px;text-align:center;width:100%;max-width:380px;box-shadow:0 25px 50px rgba(0,0,0,0.6);">
+                    <p style="font-size:0.75rem;color:#e6c068;opacity:0.7;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">Sinastria</p>
+                    <h2 style="font-family:'Playfair Display',serif;color:#fff1c2;font-size:1.6rem;margin-bottom:8px;">Batismo da Segunda Alma</h2>
+                    <p style="color:#f6edd6;opacity:0.6;font-size:0.85rem;margin-bottom:25px;">Declare os dados desta alma para o cruzamento kármico.</p>
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+                        <input type="text" id="sec-name" placeholder="Nome Completo" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
+                        <input type="date" id="sec-date" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
+                        <input type="time" id="sec-time" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
                     </div>
-                    <button onclick="uGuru.chat.salvarSegundaAlma()" style="
-                        background: linear-gradient(135deg, #e6c068, #ffb36a);
-                        color: #0b1026; border: none; padding: 18px;
-                        border-radius: 16px; font-weight: 700; width: 100%;
-                        text-transform: uppercase; letter-spacing: 1px;
-                        cursor: pointer; font-size: 0.9rem; margin-bottom: 10px;">Consagrar</button>
-                    <button onclick="uGuru.chat.fecharSinastria()" style="
-                        background: transparent; border: none;
-                        color: #f6edd6; opacity: 0.4; font-size: 0.8rem;
-                        cursor: pointer; text-decoration: underline; width: 100%;">Recuar</button>
+                    <button onclick="uGuru.chat.salvarSegundaAlma()" style="background:linear-gradient(135deg,#e6c068,#ffb36a);color:#0b1026;border:none;padding:18px;border-radius:16px;font-weight:700;width:100%;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-size:0.9rem;margin-bottom:10px;">Consagrar</button>
+                    <button onclick="uGuru.chat.fecharSinastria()" style="background:transparent;border:none;color:#f6edd6;opacity:0.4;font-size:0.8rem;cursor:pointer;text-decoration:underline;width:100%;">Recuar</button>
                 </div>
-            </div>
-        `;
+            </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
