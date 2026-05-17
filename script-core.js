@@ -99,10 +99,9 @@ function reviewData() {
         </p>
     `;
 
-    // Garanta que esta função hideAll() exista no seu arquivo!
-    if (typeof hideAll === "function") hideAll();
-    
-    document.getElementById('confirmation-modal').classList.remove('hidden');
+    saveState(); // ← adiciona essa linha
+if (typeof hideAll === "function") hideAll();
+document.getElementById('confirmation-modal').classList.remove('hidden');
 }
 
 function backToEdit() {
