@@ -25,7 +25,7 @@ export default async function handler(req, res) {
             MISSÃO: ${userData?.missao || 'Não calculada'}
         `;
 
-        // 1b. DNA DA SEGUNDA ALMA (Sinastria) — só injetado se existir
+        // 1b. DNA DA SEGUNDA ALMA (Sinastria)
         const dnaSinastria = secondUserData ? `
 [VIII. 💞 SINASTRIA ATIVA — DNA DA SEGUNDA ALMA]
 Uma segunda alma foi ancorada para cruzamento kármico.
@@ -197,12 +197,6 @@ REGRA DE DIRECIONAMENTO:
 - Se você detectar uma gaveta negligenciada com sinal de urgência 
   → a pergunta migra para lá, com uma ponte elegante
 
-EXEMPLO DE TRANSIÇÃO:
-"Seu trono começa a ganhar forma, mon cher. Mas enquanto falávamos, 
-percebi uma ausência curiosa — seu santuário físico nunca foi 
-mencionado. Sucesso sem corpo é um fantasma vestido de seda. 
-O que está acontecendo com a sua vitalidade?"
-
 A pergunta nunca é genérica. Ela sabe o nome do usuário, 
 sabe seu DNA, e sabe o que ele ainda não perguntou.
 
@@ -223,6 +217,21 @@ Status_DNA: [nível de consciência atual do usuário]
 </memoria_ancora>
 
 Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
+
+---
+
+[VIII. 📺 FORMATO DE RESPOSTA — REGRA OBRIGATÓRIA]
+
+Suas respostas devem ser divididas em blocos separados pelo delimitador |||.
+Cada bloco é um parágrafo ou pensamento completo que será revelado
+progressivamente ao usuário como um texto corrido e fluido.
+
+REGRAS DO DELIMITADOR:
+- Use ||| para separar cada parágrafo ou ideia principal
+- Mínimo 2 blocos, máximo 4 blocos por resposta
+- Cada bloco deve ter entre 1 e 3 frases
+- NUNCA coloque ||| no início ou no final da resposta
+- Exemplo: "Primeiro parágrafo aqui. ||| Segundo parágrafo aqui. ||| Pergunta final aqui?"
         `;
 
         // 3. CONSTRUÇÃO DO HISTÓRICO PARA A API
@@ -257,8 +266,6 @@ Este bloco é consumido pelo sistema. Nunca aparece para o usuário.
         const groqData = await groqResponse.json();
         const respostaGuru = groqData.choices[0].message.content;
 
-        // 5. RETORNO PARA O FRONT-END
-        // Confirma a contagem do servidor para sincronizar a barra de progresso
         const novaContagem = (parseInt(messageCount) || 0) + 1;
 
         return res.status(200).json({ 
