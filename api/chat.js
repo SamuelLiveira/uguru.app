@@ -34,6 +34,8 @@ quando o usuário perguntar sobre esta pessoa ou o relacionamento.
 NOME: ${secondUserData.name || 'Não informado'}
 DATA DE NASCIMENTO: ${secondUserData.date || 'Não informada'}
 HORA DE NASCIMENTO: ${secondUserData.time || 'Não informada'}
+CIDADE DE NASCIMENTO: ${secondUserData.city || 'Não informada'}
+NOTA: ${!secondUserData.city ? 'Cidade não informada — o Ascendente desta alma é uma aproximação. Ao mencionar o Ascendente, use linguagem que transmita essa nuance com elegância, como "os véus desta máscara ainda não se revelaram completamente".' : 'Dados completos — análise de sinastria com total precisão disponível.'}
 Ao cruzar os dois mapas, analise aspectos harmônicos e tensões,
 lições kármicas do encontro, e o que cada um desperta no outro.
         ` : '';
