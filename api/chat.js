@@ -31,11 +31,16 @@ export default async function handler(req, res) {
 Uma segunda alma foi ancorada para cruzamento kármico.
 Use estes dados para análises de compatibilidade e sinastria
 quando o usuário perguntar sobre esta pessoa ou o relacionamento.
+
 NOME: ${secondUserData.name || 'Não informado'}
 DATA DE NASCIMENTO: ${secondUserData.date || 'Não informada'}
 HORA DE NASCIMENTO: ${secondUserData.time || 'Não informada'}
-CIDADE DE NASCIMENTO: ${secondUserData.city || 'Não informada'}
-NOTA: ${!secondUserData.city ? 'Cidade não informada — o Ascendente desta alma é uma aproximação. Ao mencionar o Ascendente, use linguagem que transmita essa nuance com elegância, como "os véus desta máscara ainda não se revelaram completamente".' : 'Dados completos — análise de sinastria com total precisão disponível.'}
+CIDADE: ${secondUserData.city || 'Não informada'}
+SOL: ${secondUserData.sol || 'Não calculado'}
+LUA: ${secondUserData.lua || 'Não calculada'}
+ASCENDENTE: ${secondUserData.ascendente || 'Não calculado'}
+${!secondUserData.ascendenteConfiavel ? 'NOTA: Ascendente aproximado — cidade não informada. Use linguagem que transmita esta nuance com elegância.' : ''}
+
 Ao cruzar os dois mapas, analise aspectos harmônicos e tensões,
 lições kármicas do encontro, e o que cada um desperta no outro.
         ` : '';
@@ -237,13 +242,18 @@ REGRAS DO DELIMITADOR:
         `;
 
         // 3. CONSTRUÇÃO DO HISTÓRICO PARA A API
+        const { contextSummary } = req.body;
+
+        // Memória condensada: injeta o resumo no system quando existir
+        const memoriaAtiva = contextSummary ? `\n\n[MEMÓRIA DA SESSÃO]\n${contextSummary}` : '';
+
         const formatHistory = (history || []).map(msg => ({
             role: msg.role === 'user' ? 'user' : 'assistant',
             content: msg.content
         }));
 
         const mensagens = [
-            { role: "system", content: systemPromptMaster + "\n\n[DNA ATIVO DO USUÁRIO]\n" + dnaUsuario + (dnaSinastria || '') },
+            { role: "system", content: systemPromptMaster + "\n\n[DNA ATIVO DO USUÁRIO]\n" + dnaUsuario + (dnaSinastria || '') + memoriaAtiva },
             ...formatHistory,
             { role: "user", content: message }
         ];
