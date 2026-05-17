@@ -93,6 +93,9 @@ function reviewData() {
         <p><b>Nome:</b> ${fields.name}</p>
         <p><b>Origem:</b> ${fields.city}/${fields.state}</p>
         <p><b>Portal:</b> ${fields.date} às ${fields.time}</p>
+        <p style="font-size: 12px; color: #e6c068; opacity: 0.8; margin-top: 10px; text-align: left;">
+            ⏰ A hora exata de nascimento é essencial para o cálculo do Ascendente. Se não souber, use a hora aproximada — o Oráculo trabalhará com o que os astros permitirem.
+        </p>
         <p style="font-size: 11px; opacity: 0.7; margin-top: 15px; border-top: 1px solid rgba(230,192,104,0.3); padding-top: 10px;">
             Ao confirmar, você aceita o <span style="color:#e6c068; cursor:pointer;"
             onclick="abrirModalTermos()">Contrato de Iniciação</span> e o uso de dados (LGPD).
