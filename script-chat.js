@@ -332,10 +332,12 @@ window.uGuru.chat = (function() {
                     <h2 style="font-family:'Playfair Display',serif;color:#fff1c2;font-size:1.6rem;margin-bottom:8px;">Batismo da Segunda Alma</h2>
                     <p style="color:#f6edd6;opacity:0.6;font-size:0.85rem;margin-bottom:25px;">Declare os dados desta alma para o cruzamento kármico.</p>
                     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-                        <input type="text" id="sec-name" placeholder="Nome Completo" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
+                        <input type="text" id="sec-name" placeholder="Nome Completo *" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
                         <input type="date" id="sec-date" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
-                        <input type="time" id="sec-time" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
+                        <input type="time" id="sec-time" placeholder="Hora de nascimento (opcional)" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
+                        <input type="text" id="sec-city" placeholder="Cidade de nascimento (opcional)" style="width:100%;padding:16px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;box-sizing:border-box;">
                     </div>
+                    <p style="font-size:0.72rem;color:#e6c068;opacity:0.5;margin-bottom:16px;">* Obrigatório. Hora e cidade aumentam a precisão do ascendente.</p>
                     <button onclick="uGuru.chat.salvarSegundaAlma()" style="background:linear-gradient(135deg,#e6c068,#ffb36a);color:#0b1026;border:none;padding:18px;border-radius:16px;font-weight:700;width:100%;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-size:0.9rem;margin-bottom:10px;">Consagrar</button>
                     <button onclick="uGuru.chat.fecharSinastria()" style="background:transparent;border:none;color:#f6edd6;opacity:0.4;font-size:0.8rem;cursor:pointer;text-decoration:underline;width:100%;">Recuar</button>
                 </div>
@@ -348,14 +350,16 @@ window.uGuru.chat = (function() {
         const name = document.getElementById('sec-name').value.trim();
         const date = document.getElementById('sec-date').value;
         const time = document.getElementById('sec-time').value;
+        const city = document.getElementById('sec-city').value.trim();
         if (!name || !date) {
             core.showCustomAlert("Campos Incompletos", "Nome e data são necessários para o cruzamento kármico, mon cher.");
             return;
         }
-        core.state.secondUser = { name, date, time };
+        core.state.secondUser = { name, date, time, city };
         fecharSinastria();
         const horaTexto = time ? ` às ${time}` : '';
-        const msg = `A alma de ${name}${horaTexto} foi ancorada. A sinastria está ativa.`;
+        const cidadeTexto = city ? ` de ${city}` : '';
+        const msg = `A alma de ${name}${cidadeTexto}${horaTexto} foi ancorada. A sinastria está ativa.`;
         addMessage(msg, "guru-msg");
         core.state.history.push({ role: 'assistant', content: msg });
         core.saveState();
