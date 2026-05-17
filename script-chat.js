@@ -26,23 +26,37 @@ window.uGuru.chat = (function() {
     });
 
     // ==========================================
-    // MOTOR DE VOZ (TTS)
+    // MOTOR DE VOZ (TTS) — COM FIX PARA iOS
     // ==========================================
     function narrarMensagem(texto) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         const textoLimpo = texto.replace(/[*_~`#]/g, '').trim();
         if (!textoLimpo) return;
-        const utterance = new SpeechSynthesisUtterance(textoLimpo);
-        utterance.lang = 'pt-BR';
-        utterance.pitch = 0.8;
-        utterance.rate = 0.9;
-        // Tenta encontrar uma voz pt-BR disponível
+
+        const falar = () => {
+            const utterance = new SpeechSynthesisUtterance(textoLimpo);
+            utterance.lang = 'pt-BR';
+            utterance.pitch = 0.8;
+            utterance.rate = 0.9;
+            const vozes = window.speechSynthesis.getVoices();
+            const vozBR = vozes.find(v => v.lang === 'pt-BR') || vozes.find(v => v.lang.startsWith('pt'));
+            if (vozBR) utterance.voice = vozBR;
+            window.speechSynthesis.speak(utterance);
+            console.log('[üGuru TTS] Narrando:', textoLimpo.substring(0, 50) + '...');
+        };
+
+        // iOS Safari carrega as vozes de forma assíncrona
         const vozes = window.speechSynthesis.getVoices();
-        const vozBR = vozes.find(v => v.lang === 'pt-BR') || vozes.find(v => v.lang.startsWith('pt'));
-        if (vozBR) utterance.voice = vozBR;
-        window.speechSynthesis.speak(utterance);
-        console.log('[üGuru TTS] Narrando:', textoLimpo.substring(0, 50) + '...');
+        if (vozes.length > 0) {
+            falar();
+        } else {
+            // Aguarda o evento onvoiceschanged (necessário no iOS)
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.onvoiceschanged = null;
+                falar();
+            };
+        }
     }
 
     // ==========================================
@@ -345,7 +359,7 @@ window.uGuru.chat = (function() {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
-    function salvarSegundaAlma() {
+    async function salvarSegundaAlma() {
         const core = getCore();
         const name = document.getElementById('sec-name').value.trim();
         const date = document.getElementById('sec-date').value;
@@ -355,13 +369,42 @@ window.uGuru.chat = (function() {
             core.showCustomAlert("Campos Incompletos", "Nome e data são necessários para o cruzamento kármico, mon cher.");
             return;
         }
+
         core.state.secondUser = { name, date, time, city };
         fecharSinastria();
+
         const horaTexto = time ? ` às ${time}` : '';
         const cidadeTexto = city ? ` de ${city}` : '';
-        const msg = `A alma de ${name}${cidadeTexto}${horaTexto} foi ancorada. A sinastria está ativa.`;
-        addMessage(msg, "guru-msg");
-        core.state.history.push({ role: 'assistant', content: msg });
+        const msgAncora = `A alma de ${name}${cidadeTexto}${horaTexto} foi ancorada. Calculando o mapa astral...`;
+        addMessage(msgAncora, "guru-msg");
+
+        // Chama a rota de sinastria para calcular o mapa da segunda alma
+        try {
+            const response = await fetch('/api/sinastria', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ secondUserData: core.state.secondUser })
+            });
+            if (response.ok) {
+                const astral = await response.json();
+                core.state.secondUser.sol = astral.sol;
+                core.state.secondUser.lua = astral.lua;
+                core.state.secondUser.ascendente = astral.ascendente;
+                core.state.secondUser.ascendenteConfiavel = astral.ascendenteConfiavel;
+                const msgConfirm = `✨ Sinastria ativa. ${name}: Sol em ${astral.sol}, Lua em ${astral.lua}${astral.ascendenteConfiavel ? `, Ascendente em ${astral.ascendente}` : ''}.`;
+                addMessage(msgConfirm, "guru-msg");
+                core.state.history.push({ role: 'assistant', content: msgConfirm });
+            } else {
+                const msgFallback = `A alma de ${name} foi ancorada. A sinastria está ativa.`;
+                addMessage(msgFallback, "guru-msg");
+                core.state.history.push({ role: 'assistant', content: msgFallback });
+            }
+        } catch(e) {
+            const msgFallback = `A alma de ${name} foi ancorada. A sinastria está ativa.`;
+            addMessage(msgFallback, "guru-msg");
+            core.state.history.push({ role: 'assistant', content: msgFallback });
+        }
+
         core.saveState();
     }
 
