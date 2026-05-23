@@ -1,174 +1,105 @@
 // ==========================================
-// üGURU — GERADOR DE DOSSIÊ (OPENCAGE + ASTROLOGY API + GROQ)
-// [GEOCODING DINÂMICO + SINASTRIA COM DADOS OPCIONAIS]
+// üGURU — GERADOR DE DOSSIÊ
+// [ASTROLOGY API NATIVA: timezone_with_dst + birth_details]
 // ==========================================
 
 function reduzirNumerologia(num) {
     while (num > 9 && num !== 11 && num !== 22 && num !== 33) {
-        num = String(num).split('').reduce((acc, digit) => acc + parseInt(digit), 0);
+        num = String(num).split('').reduce((acc, d) => acc + parseInt(d), 0);
     }
     return num;
 }
 
 function calcularNumerologia(nome, dataStr) {
-    const pitagoras = {
-        a:1, b:2, c:3, d:4, e:5, f:6, g:7, h:8, i:9,
-        j:1, k:2, l:3, m:4, n:5, o:6, p:7, q:8, r:9,
-        s:1, t:2, u:3, v:4, w:5, x:6, y:7, z:8
-    };
-    const digitosData = dataStr.replace(/\D/g, '');
-    let somaData = 0;
-    for(let char of digitosData) somaData += parseInt(char);
-    const destino = reduzirNumerologia(somaData);
-    const nomeLimpo = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "");
-    let somaNome = 0;
-    for(let char of nomeLimpo) somaNome += pitagoras[char] || 0;
-    const expressao = reduzirNumerologia(somaNome);
+    const p = { a:1,b:2,c:3,d:4,e:5,f:6,g:7,h:8,i:9,j:1,k:2,l:3,m:4,n:5,o:6,p:7,q:8,r:9,s:1,t:2,u:3,v:4,w:5,x:6,y:7,z:8 };
+    const digits = dataStr.replace(/\D/g,'');
+    const destino = reduzirNumerologia([...digits].reduce((a,c) => a + parseInt(c), 0));
+    const limpo = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g,"");
+    const expressao = reduzirNumerologia([...limpo].reduce((a,c) => a + (p[c]||0), 0));
     const missao = reduzirNumerologia(destino + expressao);
     return { destino, expressao, missao };
 }
 
-// Função reutilizável: geocoding + astrology API
+async function geocodificar(city, state) {
+    const auth = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
+    const response = await fetch("https://json.astrologyapi.com/v1/timezone_with_dst", {
+        method: "POST",
+        headers: { "Authorization": `Basic ${auth}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ city, country: "BR", state })
+    });
+    if (!response.ok) throw new Error("Geocoding falhou");
+    const data = await response.json();
+    return { lat: data.latitude, lon: data.longitude, tzone: data.timezone };
+}
+
 async function calcularAstral(date, time, city, state) {
-    let lat = -15.78; // Brasília como fallback
-    let lon = -47.93;
-    let tzone = -3;
-    let cidadeConhecida = false;
-
-    // Geocoding só se tiver cidade
-    if (city) {
-        const cidadeQuery = state ? `${city}, ${state}, Brasil` : `${city}, Brasil`;
-        try {
-            const geoResponse = await fetch(
-                `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(cidadeQuery)}&key=${process.env.OPENCAGE_API_KEY}&language=pt&countrycode=br&limit=1`
-            );
-            if (geoResponse.ok) {
-                const geoData = await geoResponse.json();
-                if (geoData.results && geoData.results.length > 0) {
-                    const resultado = geoData.results[0];
-                    lat = resultado.geometry.lat;
-                    lon = resultado.geometry.lng;
-                    const offsetSegundos = resultado.annotations?.timezone?.offset_sec || -10800;
-                    tzone = offsetSegundos / 3600;
-                    cidadeConhecida = true;
-                }
-            }
-        } catch(e) {
-            console.warn("[uGuru] Geocoding falhou, usando coordenadas centrais.");
-        }
-    }
-
     const [ano, mes, dia] = date.split('-');
-    const timeParts = (time || '12:00').split(':');
-    const hora = timeParts[0];
-    const min = timeParts[1] || '00';
+    const [hora, min] = (time || '12:00').split(':');
+    const auth = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
 
-    const authString = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
+    let lat = -15.78, lon = -47.93, tzone = -3, cidadeConhecida = false;
 
-    const astroPayload = {
-        day: parseInt(dia), month: parseInt(mes), year: parseInt(ano),
-        hour: parseInt(hora), min: parseInt(min),
-        lat, lon, tzone
-    };
-
-    let sol = "Desconhecido";
-    let lua = "Desconhecida";
-    let asc = cidadeConhecida ? "Desconhecido" : "Indefinido*";
-
-    try {
-        const astroResponse = await fetch("https://json.astrologyapi.com/v1/planets", {
-            method: "POST",
-            headers: { "Authorization": `Basic ${authString}`, "Content-Type": "application/json" },
-            body: JSON.stringify(astroPayload)
-        });
-        if (astroResponse.ok) {
-            const astroData = await astroResponse.json();
-            sol = astroData.find(p => p.name === "Sun")?.sign || "Desconhecido";
-            lua = astroData.find(p => p.name === "Moon")?.sign || "Desconhecida";
-            // Ascendente só é confiável se tiver cidade
-            if (cidadeConhecida) {
-                asc = astroData.find(p => p.name === "Ascendant")?.sign || "Desconhecido";
-            }
-        }
-    } catch(e) {
-        console.warn("[uGuru] Astrology API falhou.");
+    if (city) {
+        try {
+            const geo = await geocodificar(city, state || '');
+            lat = geo.lat; lon = geo.lon; tzone = geo.tzone;
+            cidadeConhecida = true;
+        } catch(e) { console.warn("[uGuru] Geocoding falhou, usando fallback."); }
     }
 
+    const astroResponse = await fetch("https://json.astrologyapi.com/v1/planets", {
+        method: "POST",
+        headers: { "Authorization": `Basic ${auth}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ day: parseInt(dia), month: parseInt(mes), year: parseInt(ano), hour: parseInt(hora), min: parseInt(min), lat, lon, tzone })
+    });
+
+    let sol = "Desconhecido", lua = "Desconhecida", asc = cidadeConhecida ? "Desconhecido" : "Indefinido*";
+    if (astroResponse.ok) {
+        const astroData = await astroResponse.json();
+        sol = astroData.find(p => p.name === "Sun")?.sign || sol;
+        lua = astroData.find(p => p.name === "Moon")?.sign || lua;
+        if (cidadeConhecida) asc = astroData.find(p => p.name === "Ascendant")?.sign || asc;
+    }
     return { sol, lua, asc, cidadeConhecida };
 }
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Acesso negado.' });
-
     const { userData } = req.body;
 
     try {
-        // --- 1. NUMEROLOGIA DO USUÁRIO PRINCIPAL ---
         const numeros = calcularNumerologia(userData.name, userData.date);
+        const { sol, lua, asc, cidadeConhecida } = await calcularAstral(userData.date, userData.time, userData.city, userData.state);
+        const astrologia = `Sol em ${sol}, Lua em ${lua}, Ascendente em ${asc}${!cidadeConhecida ? ' (aproximação)' : ''}.`;
 
-        // --- 2. ASTRAL DO USUÁRIO PRINCIPAL ---
-        const { sol, lua, asc, cidadeConhecida } = await calcularAstral(
-            userData.date, userData.time, userData.city, userData.state
-        );
+        const prompt = `Você é o üGuru, Oráculo de Luxo aristocrático.
+Redija 7 cards para ${userData.name}, nascido em ${userData.city || 'local não informado'}.
 
-        const astrologia = `Sol em ${sol}, Lua em ${lua}, Ascendente em ${asc}${!cidadeConhecida ? ' (cidade não informada, aproximação central)' : ''}.`;
-
-        // --- 3. GROQ: geração dos cards ---
-        const promptGerador = `
-Você é o üGuru, um Oráculo de Luxo, dândi digital e profundo.
-Sua missão é redigir 7 cards para o usuário ${userData.name}, nascido em ${userData.city || 'local não informado'}.
-
-AQUI ESTÃO OS DADOS MATEMÁTICOS EXATOS DELE (NÃO INVENTE, USE ESTES):
+DADOS EXATOS (USE ESTES, NÃO INVENTE):
 Astrologia: ${astrologia}
-Numerologia Pitagórica: Destino ${numeros.destino}, Expressão ${numeros.expressao}, Missão ${numeros.missao}.
+Numerologia: Destino ${numeros.destino}, Expressão ${numeros.expressao}, Missão ${numeros.missao}.
 
-REGRAS RÍGIDAS DE REDAÇÃO E TAMANHO:
-- Tom aristocrático, esotérico, implacável.
-- Cards 1 a 3 (Astrologia): Fale do Sol, Lua e Ascendente listados acima. Devem ter cerca de 10 linhas de texto contínuo.
-- Cards 4 a 6 (Numerologia): Fale EXATAMENTE dos números de Destino, Expressão e Missão passados acima. Cerca de 10 linhas.
-- Card 7 (Dossiê de Alma): O Veredito final conectando os astros e os números. Texto longo, denso e revelador, com cerca de 25 linhas.
+Cards 1-3: Sol, Lua, Ascendente (~10 linhas cada). Cards 4-6: Destino, Expressão, Missão (~10 linhas). Card 7: Veredito final (~25 linhas).
+Tom: aristocrático, esotérico, implacável.
 
-Formato OBRIGATÓRIO de saída (Estritamente JSON, sem blocos de código):
-{
-  "cards": [
-    { "title": "🌟 O Sol em sua Essência", "content": "texto aqui..." },
-    { "title": "🌙 Refúgio Lunar", "content": "texto aqui..." },
-    { "title": "🔥 Ascendente Estelar", "content": "texto aqui..." },
-    { "title": "💎 A Vibração do Nome (Expressão)", "content": "texto sobre o número ${numeros.expressao}..." },
-    { "title": "🗝️ A Frequência do Destino", "content": "texto sobre o número ${numeros.destino}..." },
-    { "title": "🌀 O Nó Kármico (Missão)", "content": "texto sobre o número ${numeros.missao}..." },
-    { "title": "👁️ O Dossiê de Alma (Veredito)", "content": "texto denso de 25 linhas aqui..." }
-  ]
-}`;
+JSON obrigatório:
+{"cards":[{"title":"🌟 O Sol em sua Essência","content":"..."},{"title":"🌙 Refúgio Lunar","content":"..."},{"title":"🔥 Ascendente Estelar","content":"..."},{"title":"💎 A Vibração do Nome (Expressão)","content":"..."},{"title":"🗝️ A Frequência do Destino","content":"..."},{"title":"🌀 O Nó Kármico (Missão)","content":"..."},{"title":"👁️ O Dossiê de Alma (Veredito)","content":"..."}]}`;
 
-        const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [{ role: "system", content: promptGerador }],
-                response_format: { type: "json_object" },
-                temperature: 0.7
-            })
+            body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: prompt }], response_format: { type: "json_object" }, temperature: 0.7 })
         });
 
-        const groqData = await groqResponse.json();
-        const jsonResult = JSON.parse(groqData.choices[0].message.content);
+        const groqData = await groqRes.json();
+        const result = JSON.parse(groqData.choices[0].message.content);
 
         res.status(200).json({
-            cards: jsonResult.cards,
-            astroData: {
-                sol, lua,
-                ascendente: asc,
-                ascendenteConfiavel: cidadeConhecida,
-                destino: numeros.destino,
-                expressao: numeros.expressao,
-                missao: numeros.missao
-            }
+            cards: result.cards,
+            astroData: { sol, lua, ascendente: asc, ascendenteConfiavel: cidadeConhecida, destino: numeros.destino, expressao: numeros.expressao, missao: numeros.missao }
         });
-
     } catch (error) {
-        console.error("[uGuru_Debug] Erro ao gerar cards:", error);
+        console.error("[uGuru] Erro ao gerar cards:", error);
         res.status(500).json({ error: "Falha na alquimia do sistema." });
     }
 }
