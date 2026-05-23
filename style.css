@@ -1,6 +1,6 @@
 /* ==========================================
-   üGURU 3.8 — SUNSET LUXURY (FULL RESET)
-   [AUDITORIA GADÚ: PEÇA 2 + CORREÇÕES CHAT + HITBOX + CARD MAJESTOSO]
+   üGURU — STYLESHEET COMPLETO
+   [VERSÃO FINAL: FAIXA BRANCA + GURU MSG + FIXES]
 ========================================== */
 
 :root {
@@ -20,10 +20,17 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* FIX FAIXA BRANCA: background cobre toda a área incluindo overscroll */
+html {
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--sky-deep) 0%, var(--sky-mid) 100%);
+    background-attachment: fixed;
+}
+
 body {
     width: 100%;
     min-height: 100vh;
-    background: linear-gradient(180deg, var(--sky-deep) 0%, var(--sky-mid) 100%) fixed;
+    background: transparent;
     color: #f6edd6;
     font-family: 'Inter', sans-serif;
     display: flex;
@@ -31,6 +38,7 @@ body {
     align-items: center;
     padding: env(safe-area-inset-top) 18px 0;
     overflow-x: hidden;
+    overscroll-behavior: none;
 }
 
 /* LOGO & TEXTOS */
@@ -125,7 +133,7 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
     transition: width 0.8s cubic-bezier(0.1, 0.7, 0.1, 1);
 }
 
-/* O OLHO (DISCRETO À ESQUERDA) */
+/* O OLHO */
 #dossie-eye {
     position: fixed; top: 15px; left: 15px;
     width: 42px; height: 42px;
@@ -144,16 +152,19 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
     box-shadow: 0 0 15px var(--gold);
 }
 
-/* ==========================================
-   CARDS DO BANQUETE
-   FIX DE HITBOX: banquete-wrapper com padding
-   suficiente para o botão "Entrar no Salão"
-========================================== */
+/* Olho aceso (classe .active usada pelo JS) */
+#dossie-eye.active {
+    opacity: 0.9;
+    filter: grayscale(0);
+    border-color: var(--gold);
+    box-shadow: 0 0 15px var(--gold);
+}
 
+/* CARDS DO BANQUETE */
 #banquete-wrapper {
     width: 100%;
     max-width: 450px;
-    padding-bottom: 100px; /* espaço generoso acima do input fixo */
+    padding-bottom: 100px;
     padding-top: 60px;
 }
 
@@ -167,80 +178,53 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 
 .card h3 { font-family: 'Playfair Display', serif; color: var(--gold-bright); margin-bottom: 8px; }
 
-/* CARD 7: VEREDITO (Estado Base) */
 .card-7 {
     border: 2px solid var(--gold);
     background: rgba(230, 192, 104, 0.05);
     border-radius: 20px !important;
-    position: relative;
-    z-index: 20;
+    position: relative; z-index: 20;
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.locked {
-    filter: blur(5px) grayscale(1);
-    opacity: 0.6;
-    pointer-events: none;
-}
+.locked { filter: blur(5px) grayscale(1); opacity: 0.6; pointer-events: none; }
 
-/* ==========================================
-   CARD 7: MAJESTOSO (ESTADO DESBLOQUEADO PREMIUM)
-   Adicionado por Gadú Office 💭
-========================================== */
 .card-7.unlocked-majestoso {
     min-height: 280px;
     background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(85, 62, 5, 0.3) 100%);
-    border: 2px solid #b8860b; /* Ouro envelhecido e profundo */
+    border: 2px solid #b8860b;
     box-shadow: 0 0 40px rgba(184, 134, 11, 0.5);
     transform: scale(1.03);
-    z-index: 30; /* Eleva acima dos outros cards */
+    z-index: 30;
 }
 
 .card-7.unlocked-majestoso h3 {
-    color: #fff1c2;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(255, 241, 194, 0.5);
-    margin-bottom: 12px;
+    color: #fff1c2; font-size: 1.5rem; letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 241, 194, 0.5); margin-bottom: 12px;
 }
 
-/* Botão Baixar Dossiê dentro do Card 7 */
-.btn-dossie-baixar {
-    display: block;
-    margin-top: 20px;
-    width: 100%;
-    position: relative;
-    z-index: 30;
-    pointer-events: auto !important;
-}
+.btn-dossie-baixar { display: block; margin-top: 20px; width: 100%; position: relative; z-index: 30; pointer-events: auto !important; }
+.card7-locked-text { font-size: 0.9rem; opacity: 0.85; line-height: 1.6; margin-bottom: 4px; }
 
-.card7-locked-text {
-    font-size: 0.9rem;
-    opacity: 0.85;
-    line-height: 1.6;
-    margin-bottom: 4px;
-}
-
-/* ==========================================
-   CHAT — COMPORTAMENTO WHATSAPP
-========================================== */
-
+/* CHAT */
 #chat-container {
     width: 100%;
     max-width: 450px;
-    height: 100vh;
+    height: calc(100vh - 5px);
     display: flex;
     flex-direction: column;
     position: relative;
+    padding-bottom: 0;
 }
 
 #chat-messages {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 70px 0 130px;
+    padding-top: 60px;
+    padding-bottom: 160px;
     overflow-y: auto;
     flex: 1;
+    height: 100%;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
@@ -249,27 +233,47 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 #chat-messages { scrollbar-width: none; }
 
 .message {
-    padding: 14px 18px; border-radius: 20px;
-    max-width: 85%; font-size: 0.95rem; line-height: 1.5;
+    padding: 14px 18px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
     animation: fadeIn 0.4s ease forwards;
     word-wrap: break-word;
 }
 
+/* USUÁRIO: Vidro Fumê */
 .user-msg {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     align-self: flex-end;
+    border-radius: 20px;
     border-bottom-right-radius: 4px;
+    color: #f6edd6;
+    max-width: 80%;
 }
 
+/* GURU: Texto corrido dourado — sem balão */
 .guru-msg {
-    background: var(--gold-bright);
-    color: #121212;
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
     align-self: flex-start;
-    border-bottom-left-radius: 4px;
-    font-weight: 500;
+    max-width: 100%;
+    padding: 8px 4px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--gold-bright);
+    text-shadow: 0 0 10px rgba(255, 241, 194, 0.15);
+    font-weight: 400;
 }
 
-/* LOADER DO ORÁCULO */
+.guru-msg p { margin: 0; padding: 0; }
+
+/* LOADER */
 #oracle-loading {
     align-self: flex-start;
     padding: 14px 18px;
@@ -280,24 +284,18 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 }
 
 .loading-text {
-    color: var(--gold);
-    font-size: 0.85rem;
+    color: var(--gold); font-size: 0.85rem;
     font-style: italic;
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-/* ==========================================
-   INPUT BAR — sempre fixo acima do teclado
-========================================== */
-
+/* INPUT BAR */
 .input-area {
     position: fixed;
-    bottom: 25px;
+    bottom: env(safe-area-inset-bottom, 20px);
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
     width: 92%;
     max-width: 400px;
     left: 50%;
@@ -319,9 +317,11 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 #send-btn {
     width: 44px; height: 44px; border-radius: 50%;
     background: var(--gold); border: none; color: #000;
-    font-size: 20px; cursor: pointer;
-    flex-shrink: 0;
+    font-size: 20px; cursor: pointer; flex-shrink: 0;
 }
+
+/* Input desabilitado durante typewriter */
+#user-input:disabled, #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* POPUPS */
 .popup-glass {
@@ -332,8 +332,7 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 
 .popup-content {
     background: var(--sky-deep); border: 1px solid var(--gold);
-    padding: 30px; border-radius: 25px; text-align: center;
-    max-width: 340px;
+    padding: 30px; border-radius: 25px; text-align: center; max-width: 340px;
 }
 
 .hidden { display: none !important; }
@@ -341,204 +340,60 @@ input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ALERTA PREMIUM */
-.alert-border {
-    border: 1px solid var(--gold) !important;
-    box-shadow: 0 0 30px rgba(230, 192, 104, 0.1);
-}
+/* ALERTA */
+.alert-border { border: 1px solid var(--gold) !important; box-shadow: 0 0 30px rgba(230, 192, 104, 0.1); }
+#alert-title { font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px; font-size: 1.3rem; }
+#alert-message { font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px; color: #f6edd6; opacity: 0.9; }
+#alert-buttons .btn-primary, #alert-buttons .btn-secondary { padding: 12px; font-size: 0.8rem; }
 
-#alert-title {
-    font-family: 'Playfair Display', serif;
-    color: var(--gold);
-    margin-bottom: 15px;
-    font-size: 1.3rem;
-}
-
-#alert-message {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 25px;
-    color: #f6edd6;
-    opacity: 0.9;
-}
-
-#alert-buttons .btn-primary,
-#alert-buttons .btn-secondary {
-    padding: 12px;
-    font-size: 0.8rem;
-}
-
-/* ==========================================
-   MODAL DOSSIÊ (BOTTOM SHEET COM SWIPE)
-========================================== */
-
+/* MODAL DOSSIÊ (BOTTOM SHEET) */
 .bottom-sheet {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 88vh;
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 88vh;
     background: var(--sky-deep);
-    border-top-left-radius: 35px;
-    border-top-right-radius: 35px;
+    border-top-left-radius: 35px; border-top-right-radius: 35px;
     box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.9);
-    z-index: 5000;
-    display: flex;
-    flex-direction: column;
+    z-index: 5000; display: flex; flex-direction: column;
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     transform: translateY(100%);
     border-top: 2px solid var(--gold);
 }
 
-.bottom-sheet.show {
-    transform: translateY(0);
-}
+.bottom-sheet.show { transform: translateY(0); }
 
 .drag-handle-area {
-    width: 100%;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    flex-shrink: 0;
+    width: 100%; height: 45px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: grab; flex-shrink: 0;
 }
 
 .drag-handle {
-    width: 50px;
-    height: 5px;
+    width: 50px; height: 5px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    transition: background 0.3s ease;
+    border-radius: 10px; transition: background 0.3s ease;
 }
 
-.drag-handle-area:active .drag-handle {
-    background: var(--gold);
-}
+.drag-handle-area:active .drag-handle { background: var(--gold); }
 
 .dossie-scrollable {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 25px 40px;
-    scroll-behavior: smooth;
+    flex: 1; overflow-y: auto;
+    padding: 0 25px 40px; scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
 
 .dossie-scrollable::-webkit-scrollbar { width: 0; }
 .dossie-scrollable { scrollbar-width: none; }
-/* ==========================================
-   ESTÉTICA TÁTIL GADÚ — EFEITOS DE CLIQUE
-========================================== */
 
-/* Efeito universal para botões e elementos clicáveis */
-.btn-primary, 
-.btn-secondary, 
-#send-btn, 
-.btn-dossie-baixar,
-.btn-locked,
-[onclick] {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                filter 0.2s ease, 
-                box-shadow 0.2s ease;
+/* ESTÉTICA TÁTIL — EFEITOS DE CLIQUE */
+.btn-primary, .btn-secondary, #send-btn, .btn-dossie-baixar, .btn-locked, [onclick] {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
 }
 
-/* O "Ósculo" do Clique (Ao pressionar) */
-.btn-primary:active, 
-.btn-secondary:active, 
-#send-btn:active, 
-.btn-dossie-baixar:active,
-[onclick]:active {
-    transform: scale(0.94); /* Leve compressão, como se afundasse */
-    filter: brightness(1.2); /* Um brilho súbito de feedback */
-    box-shadow: 0 0 15px rgba(230, 192, 104, 0.4); /* Um halo dourado momentâneo */
+.btn-primary:active, .btn-secondary:active, #send-btn:active, .btn-dossie-baixar:active, [onclick]:active {
+    transform: scale(0.94);
+    filter: brightness(1.2);
+    box-shadow: 0 0 15px rgba(230, 192, 104, 0.4);
 }
 
-/* Feedback especial para o botão de envio 'ü' */
-#send-btn:active {
-    background: var(--gold-bright) !important;
-    color: #0b1026 !important;
-}
-
-/* Suavidade para os Cards quando clicados (se houver ação neles) */
-.card:active {
-    transform: scale(0.98);
-}
-/* ==========================================
-   üGURU — CORREÇÕES DE LAYOUT (PATCH)
-   Aplique estas regras NO FINAL do style.css
-========================================== */
-
-/* FIX: Chat não fica escondido atrás do input no celular */
-#chat-container {
-    height: calc(100vh - 5px); /* desconta a sync-bar do topo */
-    padding-bottom: 0;
-}
-
-#chat-messages {
-    padding-top: 60px;
-    padding-bottom: 160px; /* espaço generoso acima do input */
-    height: 100%;
-    overflow-y: auto;
-}
-
-/* FIX: Input sempre visível acima do teclado no iOS/Android */
-.input-area {
-    bottom: env(safe-area-inset-bottom, 20px);
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-}
-
-/* FIX: Olho aceso (classe .active usada pelo JS) */
-#dossie-eye.active {
-    opacity: 0.9;
-    filter: grayscale(0);
-    border-color: var(--gold);
-    box-shadow: 0 0 15px var(--gold);
-}
-/* ==========================================
-   üGURU V3 — TRANSCENDÊNCIA VISUAL
-   Cole este bloco NO FINAL do style.css
-========================================== */
-
-/* USUÁRIO: Vidro Fumê (mantido, só refinado) */
-.user-msg {
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    align-self: flex-end;
-    border-radius: 20px;
-    border-bottom-right-radius: 4px;
-    color: #f6edd6;
-    max-width: 80%;
-}
-
-/* GURU: Texto Corrido — sem balão, só aura */
-.guru-msg {
-    background: none;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    align-self: flex-start;
-    max-width: 100%;
-    padding: 8px 4px;
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    line-height: 1.75;
-    color: var(--gold-bright);
-    text-shadow: 0 0 10px rgba(255, 241, 194, 0.15);
-    font-weight: 400;
-}
-
-.guru-msg p {
-    margin: 0;
-    padding: 0;
-}
-
-/* Input desabilitado durante typewriter */
-#user-input:disabled,
-#send-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
+#send-btn:active { background: var(--gold-bright) !important; color: #0b1026 !important; }
+.card:active { transform: scale(0.98); }
