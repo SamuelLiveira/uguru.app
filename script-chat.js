@@ -26,32 +26,28 @@ window.uGuru.chat = (function() {
     });
 
     // ==========================================
-    // MOTOR DE VOZ (TTS) — COM FIX PARA iOS
+    // MOTOR DE VOZ (TTS) — VOZ NATURAL
     // ==========================================
     function narrarMensagem(texto) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-        const textoLimpo = texto.replace(/[*_~`#]/g, '').trim();
+        const textoLimpo = texto.replace(/[*_~`#|]/g, '').trim();
         if (!textoLimpo) return;
 
         const falar = () => {
             const utterance = new SpeechSynthesisUtterance(textoLimpo);
             utterance.lang = 'pt-BR';
-            utterance.pitch = 0.8;
-            utterance.rate = 0.9;
+            // Voz natural — sem alterações de pitch/rate
             const vozes = window.speechSynthesis.getVoices();
             const vozBR = vozes.find(v => v.lang === 'pt-BR') || vozes.find(v => v.lang.startsWith('pt'));
             if (vozBR) utterance.voice = vozBR;
             window.speechSynthesis.speak(utterance);
-            console.log('[üGuru TTS] Narrando:', textoLimpo.substring(0, 50) + '...');
         };
 
-        // iOS Safari carrega as vozes de forma assíncrona
         const vozes = window.speechSynthesis.getVoices();
         if (vozes.length > 0) {
             falar();
         } else {
-            // Aguarda o evento onvoiceschanged (necessário no iOS)
             window.speechSynthesis.onvoiceschanged = () => {
                 window.speechSynthesis.onvoiceschanged = null;
                 falar();
@@ -219,6 +215,7 @@ window.uGuru.chat = (function() {
         if (!message) return;
 
         if (message.toLowerCase() === '/batizar') { input.value = ''; iniciarBatismoSegundaAlma(); return; }
+        if (message.toLowerCase() === '/liberar') { input.value = ''; ascenderGrau(); return; }
 
         if (core.state.tier === 0 && core.state.messageCount >= 5) {
             core.iniciarPagamento(); return;
