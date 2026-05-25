@@ -26,7 +26,7 @@ window.uGuru.chat = (function() {
     });
 
     // ==========================================
-    // MOTOR DE VOZ (TTS) — VOZ NATURAL
+    // MOTOR DE VOZ (TTS) — VOZ MASCULINA
     // ==========================================
     function narrarMensagem(texto) {
         if (!window.speechSynthesis) return;
@@ -37,10 +37,12 @@ window.uGuru.chat = (function() {
         const falar = () => {
             const utterance = new SpeechSynthesisUtterance(textoLimpo);
             utterance.lang = 'pt-BR';
-            // Voz natural — sem alterações de pitch/rate
             const vozes = window.speechSynthesis.getVoices();
-            const vozBR = vozes.find(v => v.lang === 'pt-BR') || vozes.find(v => v.lang.startsWith('pt'));
-            if (vozBR) utterance.voice = vozBR;
+            // Tenta encontrar voz masculina pt-BR
+            const vozMasculina = vozes.find(v => v.lang === 'pt-BR' && v.name.toLowerCase().includes('male'))
+                || vozes.find(v => v.lang === 'pt-BR' && (v.name.includes('Ricardo') || v.name.includes('Daniel') || v.name.includes('Luciano') || v.name.includes('Felipe')))
+                || vozes.find(v => v.lang.startsWith('pt') && !v.name.toLowerCase().includes('female'));
+            if (vozMasculina) utterance.voice = vozMasculina;
             window.speechSynthesis.speak(utterance);
         };
 
@@ -375,7 +377,7 @@ window.uGuru.chat = (function() {
         const msgAncora = `A alma de ${name}${cidadeTexto}${horaTexto} foi ancorada. Calculando o mapa astral...`;
         addMessage(msgAncora, "guru-msg");
 
-        // Chama a rota de sinastria para calcular o mapa da segunda alma
+// Chama a rota de sinastria para calcular o mapa da segunda alma
         try {
             const response = await fetch('/api/sinastria', {
                 method: 'POST',
