@@ -130,12 +130,20 @@ async function fetchCardsFromBackend() {
         const data = await response.json();
         state.cardsData = data.cards;
         if (data.astroData) {
-            state.user.sol = data.astroData.sol;
-            state.user.lua = data.astroData.lua;
+            state.user.sol        = data.astroData.sol;
+            state.user.lua        = data.astroData.lua;
             state.user.ascendente = data.astroData.ascendente;
-            state.user.destino = data.astroData.destino;
-            state.user.expressao = data.astroData.expressao;
-            state.user.missao = data.astroData.missao;
+            state.user.mercurio   = data.astroData.mercurio;
+            state.user.venus      = data.astroData.venus;
+            state.user.marte      = data.astroData.marte;
+            state.user.jupiter    = data.astroData.jupiter;
+            state.user.saturno    = data.astroData.saturno;
+            state.user.urano      = data.astroData.urano;
+            state.user.netuno     = data.astroData.netuno;
+            state.user.plutao     = data.astroData.plutao;
+            state.user.destino    = data.astroData.destino;
+            state.user.expressao  = data.astroData.expressao;
+            state.user.missao     = data.astroData.missao;
         }
         // Salva imediatamente após receber os dados astrais
         saveState();
@@ -360,6 +368,7 @@ window.fecharModalDossie = function () {
         dragging = false; startY = 0; currentY = 0;
     });
 })();
+
 
 // ==========================================
 // MODAL DE TERMOS
