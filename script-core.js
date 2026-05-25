@@ -13,6 +13,9 @@ if (state.isPaid && state.tier === 0) state.tier = 1;
 
 window.onload = () => {
     verificarRegeneracaoDiaria();
+    // Força um save para garantir que o lastActiveDate está atualizado
+    if (state.user) saveState();
+    
     if (state.user && state.step !== 'onboarding') {
         if (state.step === 'banquete') showBanquete();
         else if (state.step === 'chat' && typeof irParaChat === "function") irParaChat();
@@ -134,11 +137,13 @@ async function fetchCardsFromBackend() {
             state.user.expressao = data.astroData.expressao;
             state.user.missao = data.astroData.missao;
         }
+        // Salva imediatamente após receber os dados astrais
+        saveState();
     } catch (error) {
-        console.warn("[uGuru] Usando Arquétipo Zero...");
+        console.warn("[uGuru] Usando Arquétipo Zero:", error.message);
         state.cardsData = obterArquetipoZero();
+        saveState();
     }
-    saveState();
     renderCards();
     if (btnChat) btnChat.classList.remove('hidden');
 }
@@ -355,7 +360,6 @@ window.fecharModalDossie = function () {
         dragging = false; startY = 0; currentY = 0;
     });
 })();
-
 
 // ==========================================
 // MODAL DE TERMOS
