@@ -55,16 +55,32 @@ export default async function handler(req, res) {
             if (geoData.latitude && geoData.longitude) {
                 lat = parseFloat(geoData.latitude);
                 lon = parseFloat(geoData.longitude);
-                // offset pode vir como número positivo/negativo em horas
-                tzone = typeof geoData.timezone === 'number' ? geoData.timezone
-                      : typeof geoData.offset === 'number' ? geoData.offset
-                      : typeof geoData.timezone_offset === 'number' ? geoData.timezone_offset
-                      : -3;
+
+                // Extrai offset numérico — pode vir em vários campos
+                let rawTz = geoData.timezone ?? geoData.offset ?? geoData.timezone_offset ?? null;
+                if (typeof rawTz === 'number') {
+                    tzone = rawTz;
+                } else if (typeof rawTz === 'string' && !isNaN(parseFloat(rawTz))) {
+                    tzone = parseFloat(rawTz);
+                } else {
+                    // Fallback: calcula DST histórico para o Brasil
+                    // Brasil usou horário de verão de out a fev entre 1985-2019
+                    const mesNasc = parseInt(mes);
+                    const anoNasc = parseInt(ano);
+                    const temDST = anoNasc >= 1985 && anoNasc <= 2019 && (mesNasc >= 10 || mesNasc <= 2);
+                    tzone = temDST ? -2 : -3;
+                    console.log(`[uGuru] Timezone calculado manualmente: ${tzone} (DST: ${temDST})`);
+                }
                 cidadeConhecida = true;
                 console.log(`[uGuru] Geocoding OK: lat=${lat} lon=${lon} tzone=${tzone}`);
             }
         } catch(e) {
-            console.warn("[uGuru] Geocoding falhou, fallback Brasília:", e.message);
+            // Fallback com DST histórico
+            const mesNasc = parseInt(mes);
+            const anoNasc = parseInt(ano);
+            const temDST = anoNasc >= 1985 && anoNasc <= 2019 && (mesNasc >= 10 || mesNasc <= 2);
+            tzone = temDST ? -2 : -3;
+            console.warn("[uGuru] Geocoding falhou, fallback DST:", tzone, e.message);
         }
 
         // PASSO 2: Mapa astral completo
