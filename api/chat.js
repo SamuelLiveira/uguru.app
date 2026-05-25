@@ -10,9 +10,19 @@ export default async function handler(req, res) {
 
         const dnaUsuario = `
 NOME: ${userData?.name || 'Desconhecido'}
-DATA: ${userData?.date || 'Não definida'} | HORA: ${userData?.time || 'Não definida'} | CIDADE: ${userData?.city || 'Não definida'}
-SOL: ${userData?.sol || 'N/A'} | LUA: ${userData?.lua || 'N/A'} | ASCENDENTE: ${userData?.ascendente || 'N/A'}
-DESTINO: ${userData?.destino || 'N/A'} | EXPRESSÃO: ${userData?.expressao || 'N/A'} | MISSÃO: ${userData?.missao || 'N/A'}`;
+DATA: ${userData?.date || 'N/A'} | HORA: ${userData?.time || 'N/A'} | CIDADE: ${userData?.city || 'N/A'}
+☀️ SOL: ${userData?.sol || 'N/A'}
+🌙 LUA: ${userData?.lua || 'N/A'}
+⬆️ ASCENDENTE: ${userData?.ascendente || 'N/A'}
+☿ MERCÚRIO: ${userData?.mercurio || 'N/A'}
+♀ VÊNUS: ${userData?.venus || 'N/A'}
+♂ MARTE: ${userData?.marte || 'N/A'}
+♃ JÚPITER: ${userData?.jupiter || 'N/A'}
+♄ SATURNO: ${userData?.saturno || 'N/A'}
+♅ URANO: ${userData?.urano || 'N/A'}
+♆ NETUNO: ${userData?.netuno || 'N/A'}
+♇ PLUTÃO: ${userData?.plutao || 'N/A'}
+🔢 DESTINO: ${userData?.destino || 'N/A'} | EXPRESSÃO: ${userData?.expressao || 'N/A'} | MISSÃO: ${userData?.missao || 'N/A'}`;
 
         const dnaSinastria = secondUserData ? `
 [SINASTRIA ATIVA]
