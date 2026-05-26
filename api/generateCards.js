@@ -1,6 +1,6 @@
 // ==========================================
-// üGURU — GERADOR DE DOSSIÊ (VERSÃO DEFINITIVA)
-// [ASTROLOGY API: timezone_with_dst + planets]
+// üGURU — GERADOR DE DOSSIÊ (VERSÃO FINAL)
+// [OPENCAGE → ASTROLOGY API: geocoding correto]
 // ==========================================
 
 function reduzirNumerologia(num) {
@@ -20,15 +20,20 @@ function calcularNumerologia(nome, dataStr) {
     return { destino, expressao, missao };
 }
 
-// Converte qualquer retorno de timezone em número
-function parseTzone(tzData) {
-    if (typeof tzData === 'number') return tzData;
-    if (typeof tzData === 'string') {
-        // Tenta extrair offset numérico se vier como "America/Sao_Paulo"
-        // Usa offset_dst ou offset como fallback
-        return -3;
-    }
-    return -3;
+async function geocodificar(city, state) {
+    const query = state ? `${city}, ${state}, Brasil` : `${city}, Brasil`;
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${process.env.OPENCAGE_API_KEY}&language=pt&countrycode=br&limit=1`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`OpenCage falhou: ${res.status}`);
+    const data = await res.json();
+    if (!data.results || data.results.length === 0) throw new Error("Cidade não encontrada");
+    const r = data.results[0];
+    const offsetSec = r.annotations?.timezone?.offset_sec ?? -10800;
+    return {
+        lat: r.geometry.lat,
+        lon: r.geometry.lng,
+        tzone: offsetSec / 3600
+    };
 }
 
 export default async function handler(req, res) {
@@ -41,49 +46,25 @@ export default async function handler(req, res) {
         const [hora, min] = (userData.time || '12:00').split(':');
         const auth = Buffer.from(`${process.env.ASTRO_USER_ID}:${process.env.ASTRO_API_KEY}`).toString('base64');
 
-        // PASSO 1: Geocoding via timezone_with_dst
+        // PASSO 1: OpenCage → lat, lon, tzone reais
         let lat = -15.78, lon = -47.93, tzone = -3, cidadeConhecida = false;
         try {
-            const geoRes = await fetch("https://json.astrologyapi.com/v1/timezone_with_dst", {
-                method: "POST",
-                headers: { "Authorization": `Basic ${auth}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ city: userData.city, country: "BR", state: userData.state || "" })
-            });
-            const geoData = await geoRes.json();
-            console.log("[uGuru] timezone_with_dst response:", JSON.stringify(geoData));
-
-            if (geoData.latitude && geoData.longitude) {
-                lat = parseFloat(geoData.latitude);
-                lon = parseFloat(geoData.longitude);
-
-                // Extrai offset numérico — pode vir em vários campos
-                let rawTz = geoData.timezone ?? geoData.offset ?? geoData.timezone_offset ?? null;
-                if (typeof rawTz === 'number') {
-                    tzone = rawTz;
-                } else if (typeof rawTz === 'string' && !isNaN(parseFloat(rawTz))) {
-                    tzone = parseFloat(rawTz);
-                } else {
-                    // Fallback: calcula DST histórico para o Brasil
-                    // Brasil usou horário de verão de out a fev entre 1985-2019
-                    const mesNasc = parseInt(mes);
-                    const anoNasc = parseInt(ano);
-                    const temDST = anoNasc >= 1985 && anoNasc <= 2019 && (mesNasc >= 10 || mesNasc <= 2);
-                    tzone = temDST ? -2 : -3;
-                    console.log(`[uGuru] Timezone calculado manualmente: ${tzone} (DST: ${temDST})`);
-                }
-                cidadeConhecida = true;
-                console.log(`[uGuru] Geocoding OK: lat=${lat} lon=${lon} tzone=${tzone}`);
-            }
+            const geo = await geocodificar(userData.city, userData.state);
+            lat = geo.lat;
+            lon = geo.lon;
+            tzone = geo.tzone;
+            cidadeConhecida = true;
+            console.log(`[uGuru] Geocoding OK: ${userData.city} → lat:${lat} lon:${lon} tzone:${tzone}`);
         } catch(e) {
-            // Fallback com DST histórico
+            // DST histórico brasileiro como fallback
             const mesNasc = parseInt(mes);
             const anoNasc = parseInt(ano);
             const temDST = anoNasc >= 1985 && anoNasc <= 2019 && (mesNasc >= 10 || mesNasc <= 2);
             tzone = temDST ? -2 : -3;
-            console.warn("[uGuru] Geocoding falhou, fallback DST:", tzone, e.message);
+            console.warn(`[uGuru] Geocoding falhou, fallback DST:${tzone}`, e.message);
         }
 
-        // PASSO 2: Mapa astral completo
+        // PASSO 2: Astrology API — mapa completo
         const astroPayload = {
             day: parseInt(dia), month: parseInt(mes), year: parseInt(ano),
             hour: parseInt(hora), min: parseInt(min),
@@ -118,7 +99,7 @@ export default async function handler(req, res) {
         const mapaTexto = `Sol: ${sol} | Lua: ${lua} | Asc: ${asc} | Mercúrio: ${mercurio} | Vênus: ${venus} | Marte: ${marte} | Júpiter: ${jupiter} | Saturno: ${saturno} | Urano: ${urano} | Netuno: ${netuno} | Plutão: ${plutao}`;
         console.log("[uGuru] Mapa:", mapaTexto);
 
-        // PASSO 3: Cards via Groq
+        // PASSO 3: Groq — geração dos cards
         const prompt = `Você é o üGuru, Oráculo aristocrático.
 Redija 7 cards para ${userData.name}, nascido em ${userData.city || 'local não informado'}.
 
